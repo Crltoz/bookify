@@ -31,7 +31,7 @@ public class UserController {
         // return 404 if user not found
         Optional<User> user = userService.getUserById(id);
         if (user.isEmpty()) {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
