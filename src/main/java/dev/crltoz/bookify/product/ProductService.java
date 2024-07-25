@@ -20,4 +20,12 @@ public class ProductService {
     public Optional<Product> getProductById(ObjectId id) {
         return productRepository.findById(id);
     }
+
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public void deleteProduct(ObjectId id) {
+        productRepository.deleteById(id);
+    }
 }
