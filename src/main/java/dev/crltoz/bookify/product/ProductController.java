@@ -32,17 +32,22 @@ public class ProductController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(@RequestBody CreateProductRequest productRequest) {
         // first check if product already exists by name
         List<Product> products = productService.getAllProducts();
         for (Product p : products) {
-            if (p.getName().equals(product.getName())) {
-                return new ResponseEntity<>(product, HttpStatus.CONFLICT);
+            if (p.getName().equals(productRequest.getName())) {
+                return new ResponseEntity<>(p, HttpStatus.CONFLICT);
             }
         }
 
-        // create product id here
-        product.setId(new ObjectId());
+        // create product
+        Product product = new Product(
+                productRequest.getName(),
+                productRequest.getDescription(),
+                productRequest.getImages()
+        );
+
         productService.addProduct(product);
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }

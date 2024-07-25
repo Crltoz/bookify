@@ -22,4 +22,10 @@ public class Product {
     private String description;
 
     private List<String> images;
+
+    public Product(String name, String description, List<String> images) {
+        this.name = name;
+        this.description = description;
+        this.images = images;
+    }
 }
