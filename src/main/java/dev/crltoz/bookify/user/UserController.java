@@ -33,16 +33,18 @@ public class UserController {
         if (user.isEmpty()) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+
+        user.get().setPassword(null); // don't return password for security reasons
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @GetMapping("/create")
-    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
+    @PostMapping("/create")
+    public ResponseEntity<Boolean> createUser(@RequestBody CreateUserRequest createUserRequest) {
         // try to find other user with the same username
         List<User> users = userService.getAllUsers();
         for (User u : users) {
             if (u.getUsername().equals(createUserRequest.getUsername())) {
-                return new ResponseEntity<>(u, HttpStatus.CONFLICT);
+                return new ResponseEntity<>(false, HttpStatus.CONFLICT);
             }
         }
 
@@ -56,11 +58,31 @@ public class UserController {
             );
 
             userService.addUser(user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
+            return new ResponseEntity<>(true, HttpStatus.CREATED);
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("NoSuchAlgorithmException was thrown in createUser", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Boolean> login(@RequestBody CreateUserRequest createUserRequest) {
+        List<User> users = userService.getAllUsers();
+        for (User u : users) {
+            if (u.getUsername().equals(createUserRequest.getUsername())) {
+                try {
+                    if (Password.verifyPassword(createUserRequest.getPassword(), u.getPassword())) {
+                        return new ResponseEntity<>(true, HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    LOGGER.error("NoSuchAlgorithmException was thrown in login", e);
+                    return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
+        return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
     }
 }
 
