@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +22,23 @@ public class ProductController {
     private JwtUtil jwtUtil;
 
     @GetMapping
-    public ResponseEntity<List<Product>> allProducts() {
+    public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
+        // check if is admin
+        if (!jwtUtil.isAdmin(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
+    }
+
+    @GetMapping("/home")
+    public ResponseEntity<List<Product>> homeProducts() {
+        // all products
+        List<Product> products = productService.getAllProducts();
+        // shuffle products
+        Collections.shuffle(products);
+        // return first 10 products
+        int toIndex = Math.min(products.size(), 10);
+        return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
