@@ -1,5 +1,6 @@
 package dev.crltoz.bookify.user;
 
+import dev.crltoz.bookify.util.JwtUtil;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +22,14 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @GetMapping
-    public ResponseEntity<List<User>> allUsers() {
+    public ResponseEntity<List<User>> allUsers(@RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isAdmin(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
@@ -54,7 +61,7 @@ public class UserController {
             User user = new User(
                     createUserRequest.getUsername(),
                     hashedPassword,
-                    createUserRequest.isAdmin()
+                    false
             );
 
             userService.addUser(user);
@@ -66,23 +73,25 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Boolean> login(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<String> login(@RequestBody CreateUserRequest createUserRequest) {
         List<User> users = userService.getAllUsers();
         for (User u : users) {
             if (u.getUsername().equals(createUserRequest.getUsername())) {
                 try {
                     if (Password.verifyPassword(createUserRequest.getPassword(), u.getPassword())) {
-                        return new ResponseEntity<>(true, HttpStatus.OK);
+                        // create jwt and send
+                        String token = jwtUtil.generateToken(u.getUsername(), u.isAdmin());
+                        return new ResponseEntity<>(token, HttpStatus.OK);
                     } else {
-                        return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+                        return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
                     }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error("NoSuchAlgorithmException was thrown in login", e);
-                    return new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+                    return new ResponseEntity<>("null", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
         }
-        return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
     }
 }
 
