@@ -15,7 +15,7 @@ import java.util.List;
 public class Product {
 
     @Id
-    private ObjectId id;
+    private String id;
 
     private String name;
 
