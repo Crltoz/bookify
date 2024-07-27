@@ -29,15 +29,30 @@ public class JwtUtil {
                 .sign(algorithm);
     }
 
-    public DecodedJWT extractClaims(String token) {
+    private String getStringFromToken(String token) {
+        // split token into parts
+        String[] parts = token.split(" ");
+        if (parts.length != 2) {
+            return null;
+        }
+
+        return parts[1];
+    }
+
+    private DecodedJWT extractClaims(String token) {
         try {
-            return verifier.verify(token);
+            String tokenString = getStringFromToken(token);
+            if (tokenString == null) {
+                return null;
+            }
+
+            return verifier.verify(tokenString);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
         DecodedJWT claims = extractClaims(token);
         if (claims == null) {
             return true;
@@ -46,11 +61,18 @@ public class JwtUtil {
     }
 
     public boolean isValidToken(String token) {
+        String tokenString = getStringFromToken(token);
+        if (tokenString == null) {
+            return false;
+        }
+
         return !isTokenExpired(token);
     }
 
     public boolean isAdmin(String token) {
+        if (!isValidToken(token)) return false;
+
         DecodedJWT claims = extractClaims(token);
-        return isValidToken(token) && claims.getClaim("isAdmin").asBoolean();
+        return claims.getClaim("isAdmin").asBoolean();
     }
 }
