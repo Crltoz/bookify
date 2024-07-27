@@ -33,6 +33,11 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
+    @GetMapping("/validate")
+    public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String token) {
+        return new ResponseEntity<>(jwtUtil.isValidToken(token), HttpStatus.OK);
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<Optional<User>> getUserById(@PathVariable ObjectId id) {
         // return 404 if user not found
@@ -76,7 +81,7 @@ public class UserController {
     public ResponseEntity<String> login(@RequestBody CreateUserRequest createUserRequest) {
         List<User> users = userService.getAllUsers();
         for (User u : users) {
-            if (u.getUsername().equals(createUserRequest.getUsername())) {
+            if (u.getUsername().equalsIgnoreCase(createUserRequest.getUsername())) {
                 try {
                     if (Password.verifyPassword(createUserRequest.getPassword(), u.getPassword())) {
                         // create jwt and send
