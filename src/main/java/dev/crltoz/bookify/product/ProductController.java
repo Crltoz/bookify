@@ -93,4 +93,28 @@ public class ProductController {
         return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
 
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<Product> editProduct(@PathVariable ObjectId id, @RequestBody CreateProductRequest productRequest, @RequestHeader("Authorization") String token) {
+        // check if is admin
+        if (!jwtUtil.isAdmin(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        // return 404 if product not found
+        Optional<Product> product = productService.getProductById(id);
+        if (product.isEmpty()) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        // update product
+        Product updatedProduct = new Product(
+                productRequest.getName(),
+                productRequest.getDescription(),
+                productRequest.getImages()
+        );
+        updatedProduct.setId(id.toString());
+
+        productService.addProduct(updatedProduct);
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    }
 }
