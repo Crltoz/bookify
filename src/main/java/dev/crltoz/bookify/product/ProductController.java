@@ -36,8 +36,8 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         // shuffle products
         Collections.shuffle(products);
-        // return first 10 products
-        int toIndex = Math.min(products.size(), 10);
+        // return first 100 products
+        int toIndex = Math.min(products.size(), 100);
         return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
     }
 

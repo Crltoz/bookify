@@ -1,22 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./css/Home.css";
 import "./css/ProductInfo.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faLocationPin, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faCalendarDays, faLocationPin, faSearch } from "@fortawesome/free-solid-svg-icons";
 import ProductInfo from "./ProductInfo";
 
 const Home = ({ products }) => {
   if (!products) products = []
-  const limitedProducts = products.slice(0, 10);
 
   const [selectedItem, setSelectedItem] = useState(null);
+  const [page, setPage] = useState(1);
+  const [limitedProducts, setLimitedProducts] = useState([]);
+
+  useEffect(() => {
+    setLimitedProducts(products.slice((page * 10) - 10, page * 10));
+  }, [page, products]);
+
 
   const onSelectItem = (product) => () => {
     setSelectedItem(product);
   }
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid min-vh-100">
       <div className="header-bottom text-center">
         <h1>Encuentra las mejores ofertas en casas, hoteles y más</h1>
         <div className="search-bar d-flex flex-column flex-lg-row justify-content-center align-items-center">
@@ -86,6 +92,24 @@ const Home = ({ products }) => {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="d-flex justify-content-center align-items-center mt-5">
+        <button
+          className="btn btn-primary"
+          onClick={() => setPage(page - 1)}
+          disabled={page === 1}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} /> Anterior
+        </button>
+        <span className="mx-3">Página {page}/{Math.ceil(products.length / 10)}</span>
+        <button
+          className="btn btn-primary ms-2"
+          onClick={() => setPage(page + 1)}
+          disabled={page * 10 >= products.length}
+        >
+          <FontAwesomeIcon icon={faArrowRight} /> Siguiente
+        </button>
       </div>
     </div>
   );

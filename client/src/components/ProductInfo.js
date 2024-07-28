@@ -24,12 +24,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="right" ref={ref} {...props} />;
 });
 
-function srcset(image, width, height, rows = 1, cols = 1) {
+function srcset(image) {
   return {
-    src: `${image}?w=${width * cols}&h=${height * rows}&fit=crop&auto=format`,
-    srcSet: `${image}?w=${width * cols}&h=${
-      height * rows
-    }&fit=crop&auto=format&dpr=2 2x`,
+    src: `${image}`,
+    srcSet: `${image}`,
   };
 }
 
@@ -96,7 +94,7 @@ export default function ProductInfo({ product, onClose }) {
                   <ImageListItem key={image} rows={1} cols={1}>
                     <img
                       className="rounded image-effect"
-                      {...srcset(image, 200, 150, 1, 1)}
+                      {...srcset(image)}
                       alt={product?.name}
                       loading="lazy"
                       onClick={() => toggleGalery(images.indexOf(image))}
