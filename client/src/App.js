@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Admin from "./components/Admin";
+import Footer from "./components/Footer";
 
 axios.defaults.baseURL = "http://localhost:8080/api";
 
@@ -38,6 +39,7 @@ function App() {
             <Route index element={<Admin />} />
           </Route>
         </Routes>
+        <Footer />
       </div>
     </main>
   );
