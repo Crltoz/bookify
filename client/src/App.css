@@ -51,21 +51,3 @@ body {
     transform: rotate(360deg);
   }
 }
-
-.btn-primary {
-  background-color: #3498DB !important;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background-color: #2980B9 !important;
-}
-
-.btn-secondary {
-  background-color: #2C3E50 !important;
-  color: #fff;
-}
-
-.btn-secondary:hover {
-  background-color: #1F2C39 !important;
-}
