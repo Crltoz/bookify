@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
-import "./css/Admin.css";
 import AdminListProducts from "./AdminListProducts";
 import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
@@ -111,9 +110,9 @@ const Admin = () => {
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center admin">
+    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100">
       {validToken ? (
-        <div className="admin d-none d-lg-flex flex-column align-items-center justify-content-center border rounded shadow-sm p-4">
+        <div className="d-none d-lg-flex flex-column align-items-center justify-content-center border rounded shadow-sm p-4 mt-5">
           <DialogText text={dialogText} onClose={onCloseDialogText} />
           <h1>Menú de acciones</h1>
           <div className="d-flex flex-column">
