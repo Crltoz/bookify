@@ -14,7 +14,8 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
 
   const addImage = () => {
     if (product && product.images) {
-        product.images.push("");
+      product.images.push("");
+      setImages([...product.images]);
     } else {
         setImages([...images, ""]);
     }
