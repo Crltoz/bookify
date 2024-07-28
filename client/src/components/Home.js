@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import "./css/Home.css";
+import "./css/ProductInfo.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarDays, faLocationPin, faSearch } from "@fortawesome/free-solid-svg-icons";
+import ProductInfo from "./ProductInfo";
 
 const Home = ({ products }) => {
   if (!products) products = []
   const limitedProducts = products.slice(0, 10);
+
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const onSelectItem = (product) => () => {
+    setSelectedItem(product);
+  }
 
   return (
     <div className="container-fluid">
@@ -34,6 +42,8 @@ const Home = ({ products }) => {
         </div>
       </div>
 
+
+      <ProductInfo product={selectedItem} onClose={onSelectItem(null)} />
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
@@ -43,13 +53,14 @@ const Home = ({ products }) => {
               <div className="card d-lg-flex flex-row d-none">
                 <img
                   src={product.images[0] || "https://via.placeholder.com/300"}
-                  className="card-img-left"
+                  className="card-img-left user-select-none rounded image-effect"
                   alt={product.name}
+                  onClick={onSelectItem(product)}
                 />
                 <div className="card-body d-flex flex-column justify-content-between align-items-center">
-                  <h5 className="card-title">{product.name}</h5>
+                  <h5 className="card-title" onClick={onSelectItem(product)}>{product.name}</h5>
                   <p className="card-text">{product.description}</p>
-                  <button href={product.link} className="btn btn-secondary w-50">
+                  <button href={product.link} className="btn btn-outline-success w-50">
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
                     Mostrar en el mapa
                   </button>
@@ -59,13 +70,14 @@ const Home = ({ products }) => {
               <div className="card d-lg-none">
                 <img
                   src={product.images[0] || "https://via.placeholder.com/300"}
-                  className="card-img-top"
+                  className="card-img-top user-select-none rounded image-effect"
                   alt={product.name}
+                  onClick={onSelectItem(product)}
                 />
                 <div className="card-body">
-                  <h5 className="card-title">{product.name}</h5>
+                  <h5 className="card-title" onClick={onSelectItem(product)}>{product.name}</h5>
                   <p className="card-text">{product.description}</p>
-                  <button href={product.link} className="btn btn-secondary">
+                  <button href={product.link} className="btn btn-outline-success">
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
                     Mostrar en el mapa
                   </button>

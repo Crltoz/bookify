@@ -101,6 +101,13 @@
 
 .card-title {
     margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-title:hover {
+    color: #2C3E50;
+    text-decoration: underline;
 }
 
 .card-text {
