@@ -6,3 +6,15 @@
     filter: brightness(0.5);
     transition: filter 0.3s ease-in-out;
 }
+
+.main-image {
+    width: 50%;
+    height: auto;
+}
+
+@media screen and (max-width: 768px) {
+    .main-image {
+        width: 100%;
+        height: 100%;
+    }
+}
