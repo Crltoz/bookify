@@ -60,9 +60,9 @@ const Home = ({ products }) => {
                 <div className="card-body d-flex flex-column justify-content-between align-items-center">
                   <h5 className="card-title" onClick={onSelectItem(product)}>{product.name}</h5>
                   <p className="card-text">{product.description}</p>
-                  <button href={product.link} className="btn btn-outline-success w-50">
+                  <button href={product.link} className="btn btn-outline-success">
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
-                    Mostrar en el mapa
+                    Ubicación
                   </button>
                 </div>
               </div>
@@ -79,7 +79,7 @@ const Home = ({ products }) => {
                   <p className="card-text">{product.description}</p>
                   <button href={product.link} className="btn btn-outline-success">
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
-                    Mostrar en el mapa
+                    Ubicación
                   </button>
                 </div>
               </div>
