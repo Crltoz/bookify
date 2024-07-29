@@ -69,7 +69,7 @@ public class UserController {
                     false
             );
 
-            userService.addUser(user);
+            userService.save(user);
             return new ResponseEntity<>(true, HttpStatus.CREATED);
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("NoSuchAlgorithmException was thrown in createUser", e);

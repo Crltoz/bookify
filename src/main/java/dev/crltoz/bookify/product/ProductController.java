@@ -114,7 +114,7 @@ public class ProductController {
         );
         updatedProduct.setId(id.toString());
 
-        productService.addProduct(updatedProduct);
+        productService.save(updatedProduct);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 }
