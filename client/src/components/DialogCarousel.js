@@ -38,21 +38,21 @@ const DialogCarousel = ({ images, handleClose, initialIndex, open }) => {
       <DialogContent>
         <h2>Galería</h2>
         <div className="row">
-          <img src={images[index]} alt="carousel" />
+          <img src={images[index] || "https://via.placeholder.com/300"} alt="carousel" />
         </div>
         <div className="row">
           <div className="col d-flex justify-content-center">
-            <IconButton onClick={handlePrev}>
+            <IconButton onClick={handlePrev} disabled={images.length == 0}>
               <ChevronLeft />
             </IconButton>
           </div>
           <div className="col d-flex justify-content-center">
             <p>
-              {index + 1} / {images.length}
+              {index + 1} / {images.length > 0 ? images.length : 1}
             </p>
           </div>
           <div className="col d-flex justify-content-center">
-            <IconButton onClick={handleNext}>
+            <IconButton onClick={handleNext} disabled={images.length == 0}>
               <ChevronRight />
             </IconButton>
           </div>

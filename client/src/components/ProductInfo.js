@@ -26,8 +26,8 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 function srcset(image) {
   return {
-    src: `${image}`,
-    srcSet: `${image}`,
+    src: `${image || "https://via.placeholder.com/300"}`,
+    srcSet: `${image || "https://via.placeholder.com/300"}`,
   };
 }
 
@@ -73,7 +73,7 @@ export default function ProductInfo({ product, onClose }) {
           <div className="d-flex justify-content-center align-items-center gap-3 user-select-none">
             <img
               className="rounded image-effect main-image"
-              src={images[0]}
+              src={images[0] || "https://via.placeholder.com/300"}
               onClick={() => toggleGalery(0)}
             />
             {images.length > 1 && (
