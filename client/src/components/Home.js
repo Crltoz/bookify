@@ -2,24 +2,33 @@ import React, { useEffect, useState } from "react";
 import "./css/Home.css";
 import "./css/ProductInfo.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faCalendarDays, faLocationPin, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faCalendarDays,
+  faLocationPin,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import ProductInfo from "./ProductInfo";
 
 const Home = ({ products }) => {
-  if (!products) products = []
+  if (!products) products = [];
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [limitedProducts, setLimitedProducts] = useState([]);
 
   useEffect(() => {
-    setLimitedProducts(products.slice((page * 10) - 10, page * 10));
-  }, [page, products]);
-
+    setLimitedProducts(products.slice(page * 10 - 10, page * 10));
+  }, [page, products.length]);
 
   const onSelectItem = (product) => () => {
     setSelectedItem(product);
-  }
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
 
   return (
     <div className="container-fluid min-vh-100">
@@ -48,14 +57,12 @@ const Home = ({ products }) => {
         </div>
       </div>
 
-
       <ProductInfo product={selectedItem} onClose={onSelectItem(null)} />
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
           {limitedProducts.map((product) => (
             <div className="col-12 col-md-6 mb-4" key={product.name}>
-  
               <div className="card d-lg-flex flex-row d-none">
                 <img
                   src={product.images[0] || "https://via.placeholder.com/300"}
@@ -64,9 +71,14 @@ const Home = ({ products }) => {
                   onClick={onSelectItem(product)}
                 />
                 <div className="card-body d-flex flex-column justify-content-between align-items-center">
-                  <h5 className="card-title" onClick={onSelectItem(product)}>{product.name}</h5>
+                  <h5 className="card-title" onClick={onSelectItem(product)}>
+                    {product.name}
+                  </h5>
                   <p className="card-text">{product.description}</p>
-                  <button href={product.link} className="btn btn-outline-success">
+                  <button
+                    href={product.link}
+                    className="btn btn-outline-success"
+                  >
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
                     Ubicación
                   </button>
@@ -81,9 +93,14 @@ const Home = ({ products }) => {
                   onClick={onSelectItem(product)}
                 />
                 <div className="card-body">
-                  <h5 className="card-title" onClick={onSelectItem(product)}>{product.name}</h5>
+                  <h5 className="card-title" onClick={onSelectItem(product)}>
+                    {product.name}
+                  </h5>
                   <p className="card-text">{product.description}</p>
-                  <button href={product.link} className="btn btn-outline-success">
+                  <button
+                    href={product.link}
+                    className="btn btn-outline-success"
+                  >
                     <FontAwesomeIcon icon={faLocationPin} className="me-2" />
                     Ubicación
                   </button>
@@ -95,21 +112,23 @@ const Home = ({ products }) => {
       </div>
 
       <div className="d-flex justify-content-center align-items-center mt-5">
-        <button
-          className="btn btn-primary"
-          onClick={() => setPage(page - 1)}
-          disabled={page === 1}
-        >
-          <FontAwesomeIcon icon={faArrowLeft} /> Anterior
-        </button>
-        <span className="mx-3">Página {page}/{Math.ceil(products.length / 10)}</span>
-        <button
-          className="btn btn-primary ms-2"
-          onClick={() => setPage(page + 1)}
-          disabled={page * 10 >= products.length}
-        >
-          <FontAwesomeIcon icon={faArrowRight} /> Siguiente
-        </button>
+        {page > 1 && (
+          <button className="btn btn-primary" onClick={() => setPage(page - 1)}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+        )}
+        <span className="mx-3">
+          Página {page}/{Math.ceil(products.length / 10)}
+        </span>
+        {page < Math.ceil(products.length / 10) && (
+          <button
+            className="btn btn-primary ms-2"
+            onClick={() => setPage(page + 1)}
+            disabled={page * 10 >= products.length}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </button>
+        )}
       </div>
     </div>
   );
