@@ -139,7 +139,7 @@ public class ProductController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
 
-        String categoryId = product.getCategoryId();
+        String categoryId = productRequest.getCategoryId();
 
         // check if category id change
         if (!Objects.equals(productRequest.getCategoryId(), product.getCategoryId())) {
