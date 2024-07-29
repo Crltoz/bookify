@@ -1,7 +1,11 @@
 package dev.crltoz.bookify.product;
 
+import dev.crltoz.bookify.category.Category;
+import dev.crltoz.bookify.category.CategoryService;
 import dev.crltoz.bookify.util.JwtUtil;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -17,6 +22,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private CategoryService categoryService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -66,14 +74,33 @@ public class ProductController {
             }
         }
 
+        String categoryId = "";
+        Category category = null;
+
+        // check if category exists
+        if (ObjectId.isValid(productRequest.getCategoryId())) {
+            category = categoryService.getCategoryById(new ObjectId(productRequest.getCategoryId())).orElse(null);
+            if (category != null) {
+                categoryId = productRequest.getCategoryId();
+            }
+        }
+
+
         // create product
         Product product = new Product(
                 productRequest.getName(),
                 productRequest.getDescription(),
-                productRequest.getImages()
+                productRequest.getImages(),
+                categoryId
         );
 
-        productService.addProduct(product);
+        productService.save(product);
+
+        if (category != null) {
+            // add product to category
+            categoryService.addProductToCategory(new ObjectId(category.getId()), new ObjectId(product.getId()));
+        }
+
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
@@ -85,10 +112,16 @@ public class ProductController {
         }
 
         // return 404 if product not found
-        Optional<Product> product = productService.getProductById(id);
-        if (product.isEmpty()) {
+        Product product = productService.getProductById(id).orElse(null);
+        if (product == null) {
             return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
         }
+
+        // remove product from category
+        if (ObjectId.isValid(product.getCategoryId())) {
+            categoryService.removeProductFromCategory(new ObjectId(product.getCategoryId()), id);
+        }
+
         productService.deleteProduct(id);
         return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
@@ -101,16 +134,38 @@ public class ProductController {
         }
 
         // return 404 if product not found
-        Optional<Product> product = productService.getProductById(id);
-        if (product.isEmpty()) {
+        Product product = productService.getProductById(id).orElse(null);
+        if (product == null) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        String categoryId = product.getCategoryId();
+
+        // check if category id change
+        if (!Objects.equals(productRequest.getCategoryId(), product.getCategoryId())) {
+            // remove product from old category
+            if (ObjectId.isValid(product.getCategoryId())) {
+                categoryService.removeProductFromCategory(new ObjectId(product.getCategoryId()), id);
+            }
+
+            // check if new category exists and set
+            if (ObjectId.isValid(productRequest.getCategoryId())) {
+                if (categoryService.getCategoryById(new ObjectId(productRequest.getCategoryId())).isPresent()) {
+                    // add product to new category
+                    categoryService.addProductToCategory(new ObjectId(productRequest.getCategoryId()), id);
+                } else {
+                    // set category id to empty if category not found
+                    categoryId = "";
+                }
+            }
         }
 
         // update product
         Product updatedProduct = new Product(
                 productRequest.getName(),
                 productRequest.getDescription(),
-                productRequest.getImages()
+                productRequest.getImages(),
+                categoryId
         );
         updatedProduct.setId(id.toString());
 

@@ -10,4 +10,5 @@ public class CreateProductRequest {
     private String name;
     private String description;
     private List<String> images;
+    private String categoryId;
 }
