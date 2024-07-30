@@ -51,7 +51,7 @@ const Home = ({ products }) => {
               placeholder="Check in - Check out"
             />
           </div>
-          <button className="btn btn-primary search">
+          <button className="btn btn-primary search text-white">
             <FontAwesomeIcon icon={faSearch} /> Buscar
           </button>
         </div>

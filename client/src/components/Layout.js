@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 
-const Layout = () => {
+const Layout = ({ isLogged, name }) => {
   return (
     <>
-    <Header />
+    <Header isLogged={isLogged} name={name} />
     <Outlet />
     </>
   );

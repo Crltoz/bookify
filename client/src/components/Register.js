@@ -73,8 +73,8 @@ const Register = () => {
             );
 
             // set the token in the local storage and in axios headers
-            localStorage.setItem("token", response.data);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data}`;
+            window.localStorage.setItem("token", response.data);
+            axios.defaults.headers.common["Authorization"] = `Bearer ${response.data}`;
             break;
           }
           case 400: {
