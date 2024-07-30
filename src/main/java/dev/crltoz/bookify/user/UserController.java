@@ -46,6 +46,11 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
+    @GetMapping("/validateAdmin")
+    public ResponseEntity<Boolean> validateAdminToken(@RequestHeader("Authorization") String token) {
+        return new ResponseEntity<>(jwtUtil.isAdmin(token), HttpStatus.OK);
+    }
+
     @GetMapping("/validate")
     public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String token) {
         return new ResponseEntity<>(jwtUtil.isValidToken(token), HttpStatus.OK);
@@ -97,7 +102,7 @@ public class UserController {
 
             userService.save(user);
             // send token after registration
-            String token = jwtUtil.generateToken(user.getEmail(), user.isAdmin());
+            String token = jwtUtil.generateToken(user);
             return new ResponseEntity<>(token, HttpStatus.CREATED);
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("NoSuchAlgorithmException was thrown in createUser", e);
@@ -123,13 +128,88 @@ public class UserController {
                 try {
                     if (Password.verifyPassword(loginUserRequest.getPassword(), u.getPassword())) {
                         // create jwt and send
-                        String token = jwtUtil.generateToken(u.getEmail(), u.isAdmin());
+                        String token = jwtUtil.generateToken(u);
                         return new ResponseEntity<>(token, HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
                     }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error("NoSuchAlgorithmException was thrown in login", e);
+                    return new ResponseEntity<>("null", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
+        return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/update/name")
+    public ResponseEntity<String> updateUser(@RequestBody UpdateUserNameRequest updateUserRequest, @RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // get user from jwt
+        String email = jwtUtil.getEmail(token);
+        if (email == null) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // check if names are valid
+        if (!isValidName(updateUserRequest.getFirstName()) || !isValidName(updateUserRequest.getLastName())) {
+            return new ResponseEntity<>("null", HttpStatus.BAD_REQUEST);
+        }
+
+        List<User> users = userService.getAllUsers();
+        for (User u : users) {
+            if (u.getEmail().equalsIgnoreCase(email)) {
+                // update user names
+                u.setFirstName(updateUserRequest.getFirstName());
+                u.setLastName(updateUserRequest.getLastName());
+                userService.save(u);
+
+                // generate new jwt and set it
+                String newToken = jwtUtil.generateToken(u);
+                return new ResponseEntity<>(newToken, HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/update/password")
+    public ResponseEntity<String> updatePassword(@RequestBody UpdateUserPasswordRequest updatePasswordRequest, @RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // get user from jwt
+        String email = jwtUtil.getEmail(token);
+        if (email == null) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // check if password is valid
+        if (!isValidPassword(updatePasswordRequest.getNewPassword())) {
+            return new ResponseEntity<>("null", HttpStatus.BAD_REQUEST);
+        }
+
+        List<User> users = userService.getAllUsers();
+        for (User u : users) {
+            if (u.getEmail().equalsIgnoreCase(email)) {
+                try {
+                    // check if old password is correct
+                    if (Password.verifyPassword(updatePasswordRequest.getOldPassword(), u.getPassword())) {
+                        // update password
+                        u.setPassword(Password.hashPassword(updatePasswordRequest.getNewPassword()));
+                        userService.save(u);
+
+                        // generate new jwt and set it
+                        String newToken = jwtUtil.generateToken(u);
+                        return new ResponseEntity<>(newToken, HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    LOGGER.error("NoSuchAlgorithmException was thrown in updatePassword", e);
                     return new ResponseEntity<>("null", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
