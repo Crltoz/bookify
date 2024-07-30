@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import DialogText from "./DialogText";
 import { Button, InputAdornment, TextField } from "@mui/material";
 import { DialogActions, DialogContent, DialogContentText } from "@mui/material";
-import { Email, Password } from "@mui/icons-material";
+import { Email, Password, Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = ({ isLogged }) => {
   const [email, setEmail] = useState("");
@@ -11,6 +11,7 @@ const Login = ({ isLogged }) => {
   const [invalidEmail, setInvalidEmail] = useState("");
   const [invalidPassword, setInvalidPassword] = useState("");
   const [dialogText, setDialogText] = useState("");
+  const [passwordType, setPasswordType] = useState("password");
 
   if (isLogged) {
     window.location.href = "/";
@@ -79,6 +80,10 @@ const Login = ({ isLogged }) => {
       });
   };
 
+  const toggleShowPassword = () => {
+    setPasswordType(passwordType === "password" ? "text" : "password");
+  };
+
   return (
     <React.Fragment>
       <div>
@@ -122,13 +127,27 @@ const Login = ({ isLogged }) => {
                 id="password"
                 name="password"
                 label="Contraseña"
-                type="password"
+                type={passwordType}
                 variant="filled"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <Password />
                     </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={toggleShowPassword}
+                    >
+                      <InputAdornment position="end">
+                        {passwordType === "password" ? (
+                          <Visibility />
+                        ) : (
+                          <VisibilityOff />
+                        )}
+                      </InputAdornment>
+                    </div>
                   ),
                 }}
                 helperText={invalidPassword}
