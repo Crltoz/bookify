@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import dev.crltoz.bookify.user.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +21,12 @@ public class JwtUtil {
         this.verifier = JWT.require(algorithm).build();
     }
 
-    public String generateToken(String username, boolean isAdmin) {
+    public String generateToken(User user) {
         return JWT.create()
-                .withSubject(username)
-                .withClaim("isAdmin", isAdmin)
+                .withSubject(user.getEmail())
+                .withClaim("name", user.getFirstName())
+                .withClaim("lastName", user.getLastName())
+                .withClaim("isAdmin", user.isAdmin())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 hours
                 .sign(algorithm);
@@ -74,5 +77,12 @@ public class JwtUtil {
 
         DecodedJWT claims = extractClaims(token);
         return claims.getClaim("isAdmin").asBoolean();
+    }
+
+    public String getEmail(String token) {
+        if (!isValidToken(token)) return null;
+
+        DecodedJWT claims = extractClaims(token);
+        return claims.getSubject();
     }
 }
