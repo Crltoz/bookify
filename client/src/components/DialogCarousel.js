@@ -30,15 +30,14 @@ const DialogCarousel = ({ images, handleClose, initialIndex, open }) => {
   }, [initialIndex]);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      TransitionComponent={Transition}
-    >
+    <Dialog open={open} onClose={onClose} TransitionComponent={Transition}>
       <DialogContent>
         <h2>Galería</h2>
         <div className="row">
-          <img src={images[index] || "https://via.placeholder.com/300"} alt="carousel" />
+          <img
+            src={images[index] || "https://via.placeholder.com/300"}
+            alt="carousel"
+          />
         </div>
         <div className="row">
           <div className="col d-flex justify-content-center">

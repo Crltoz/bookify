@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import Home from "./components/Home";
@@ -21,7 +21,7 @@ axios.defaults.validateStatus = (status) => {
 };
 
 function getToken() {
-  return window.localStorage.getItem("token")
+  return window.localStorage.getItem("token");
 }
 
 function isLogged() {
@@ -30,10 +30,10 @@ function isLogged() {
 
 function App() {
   const [products, setProducts] = useState();
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState(null);
   const [loaded, setLoaded] = useState(false);
+  const [ws, setWs] = useState(null);
+  const userRef = useRef(user);
 
   const getProducts = async () => {
     try {
@@ -46,29 +46,71 @@ function App() {
 
   const validateToken = async () => {
     try {
+      // no token, no user.
       const token = getToken();
       if (!token) {
         setLoaded(true);
         return;
       }
 
+      // token detected, validate it
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const response = await axios.get("/users/validate");
-      if (!response.data) {
-        window.localStorage.removeItem("token");
-        axios.defaults.headers.common["Authorization"] = null;
-        setLoaded(true);
-      } else {
-        const decodedObj = jwtDecode(token);
-        setName(decodedObj.name);
-        setLastName(decodedObj.lastName);
-        setEmail(decodedObj.sub);
-        setLoaded(true);
+
+      switch (response.status) {
+        case 401: {
+          // if token is invalid, remove it
+          window.localStorage.removeItem("token");
+          axios.defaults.headers.common["Authorization"] = null;
+          setLoaded(true);
+          return;
+        }
+        case 200: {
+          // token is valid, setup user
+          setupUser(token);
+          break;
+        }
+        case 202: {
+          // backend tells me to renovate token, is valid but with some changes
+          const renovate = await axios.get("/users/renovate");
+
+          // if renovate fails, remove token
+          if (renovate.status != 200) {
+            window.localStorage.removeItem("token");
+            axios.defaults.headers.common["Authorization"] = null;
+            setLoaded(true);
+            return;
+          }
+
+          // here we have a new token, create user admin and set it
+          window.localStorage.setItem("token", renovate.data);
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${renovate.data}`;
+          setupUser(renovate.data);
+        }
       }
     } catch (e) {
       console.error(e);
+      window.localStorage.removeItem("token");
+      axios.defaults.headers.common["Authorization"] = null;
       setLoaded(true);
     }
+  };
+
+  const setupUser = (token) => {
+    // valid token, decode it
+    const decodedObj = jwtDecode(token);
+    const user = {
+      id: decodedObj.id,
+      email: decodedObj.sub,
+      name: decodedObj.name,
+      lastName: decodedObj.lastName,
+      isAdmin: decodedObj.isAdmin,
+    };
+    setUser(user);
+    userRef.current = user;
+    setLoaded(true);
   };
 
   useEffect(() => {
@@ -76,44 +118,63 @@ function App() {
     validateToken();
   }, []);
 
+  useEffect(() => {
+    // create websocket
+    if (ws == null) {
+      const ws = new WebSocket("ws://localhost:8080/websocket-endpoint");
+
+      ws.onmessage = (message) => {
+        const eventMessage = JSON.parse(message.data);
+        // split eventName and arguments
+        const [...args] = eventMessage.data;
+        handleEventMessage(eventMessage.event, ...args);
+      };
+
+      setWs(ws);
+    }
+
+    // Clean up WebSocket connection when component unmounts or ws changes
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [loaded]);
+
+  const handleEventMessage = (event, ...args) => {
+    switch (event) {
+      case "updateUser":
+        // renovate jwt for some change
+        if (userRef.current && args[0] === userRef.current.id) {
+          validateToken();
+        }
+        break;
+      default:
+        console.log("Unknown event type: ", event);
+    }
+  };
+
   return (
     <main>
       <div className="App">
         {loaded ? (
           <Routes>
-            <Route
-              path="/"
-              element={<Layout isLogged={isLogged()} name={name} />}
-            >
+            <Route path="/" element={<Layout user={user} />}>
               <Route index element={<Home products={products} />} />
             </Route>
-            <Route
-              path="/admin"
-              element={<Layout isLogged={isLogged()} name={name} />}
-            >
-              <Route index element={<Admin token={getToken()} />} />
+            <Route path="/admin" element={<Layout user={user} />}>
+              <Route index element={<Admin token={getToken()} user={user} />} />
             </Route>
-            <Route
-              path="/register"
-              element={<Layout isLogged={isLogged()} name={name} />}
-            >
+            <Route path="/register" element={<Layout user={user} />}>
               <Route index element={<Register />} />
             </Route>
-            <Route
-              path="/login"
-              element={<Layout isLogged={isLogged()} name={name} />}
-            >
+            <Route path="/login" element={<Layout user={user} />}>
               <Route index element={<Login isLogged={isLogged()} />} />
             </Route>
-            <Route
-              path="/profile"
-              element={<Layout isLogged={isLogged()} name={name} />}
-            >
+            <Route path="/profile" element={<Layout user={user} />}>
               <Route
                 index
-                element={
-                  <Profile isLogged={isLogged()} email={email} name={name} lastName={lastName} onUpdate={validateToken} />
-                }
+                element={<Profile user={user} onUpdate={validateToken} />}
               />
             </Route>
           </Routes>

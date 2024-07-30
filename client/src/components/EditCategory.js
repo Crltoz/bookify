@@ -16,7 +16,7 @@ export default function EditCategory({ open, onConfirm, onCancel, category }) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <DialogText text={dialogText} onClose={onCloseDialogText} />
       <Dialog
         open={open}
@@ -30,13 +30,13 @@ export default function EditCategory({ open, onConfirm, onCancel, category }) {
             newCategory.id = category?.id || "";
 
             if (newCategory.name.length === 0) {
-                setDialogText("Debe agregar un nombre a la categoría.");
-                return;
+              setDialogText("Debe agregar un nombre a la categoría.");
+              return;
             }
 
             if (newCategory.description.length === 0) {
-                setDialogText("Debe agregar una descripción a la categoría.");
-                return;
+              setDialogText("Debe agregar una descripción a la categoría.");
+              return;
             }
             onConfirm(newCategory);
           },
@@ -95,6 +95,6 @@ export default function EditCategory({ open, onConfirm, onCancel, category }) {
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }

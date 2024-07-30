@@ -3,7 +3,12 @@ import React, { useState } from "react";
 import DialogText from "./DialogText";
 import { Button, InputAdornment, TextField } from "@mui/material";
 import { DialogActions, DialogContent, DialogContentText } from "@mui/material";
-import { Email, Password, Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Email,
+  Password,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 
 const Login = ({ isLogged }) => {
   const [email, setEmail] = useState("");
@@ -51,8 +56,10 @@ const Login = ({ isLogged }) => {
           case 200: {
             // set the token in the local storage and in axios headers
             window.localStorage.setItem("token", response.data);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${response.data}`;
-            
+            axios.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${response.data}`;
+
             window.location.href = "/";
             break;
           }
@@ -65,7 +72,9 @@ const Login = ({ isLogged }) => {
             break;
           }
           case 409: {
-            setDialogText("Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentar de nuevo.");
+            setDialogText(
+              "Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentar de nuevo."
+            );
             break;
           }
           default: {
@@ -85,84 +94,82 @@ const Login = ({ isLogged }) => {
   };
 
   return (
-    <React.Fragment>
-      <div>
-        <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary mt-5">
-          <DialogText text={dialogText} onClose={() => setDialogText("")} />
-          <div
-            className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
-            style={{ width: "100%", maxWidth: "400px" }}
-          >
-            <h1 className="text-center mb-4">Iniciar sesión</h1>
-            <DialogContent>
-              <DialogContentText>
-                Ingresa tus datos para entrar a tu cuenta.
-              </DialogContentText>
-              <TextField
-                autoFocus
-                required
-                fullWidth
-                error={invalidEmail.length > 0}
-                margin="dense"
-                id="email"
-                name="email"
-                label="Email"
-                type="email"
-                variant="filled"
-                helperText={invalidEmail}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email />
+    <div>
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary mt-5">
+        <DialogText text={dialogText} onClose={() => setDialogText("")} />
+        <div
+          className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
+          style={{ width: "100%", maxWidth: "400px" }}
+        >
+          <h1 className="text-center mb-4">Iniciar sesión</h1>
+          <DialogContent>
+            <DialogContentText>
+              Ingresa tus datos para entrar a tu cuenta.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              fullWidth
+              error={invalidEmail.length > 0}
+              margin="dense"
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              variant="filled"
+              helperText={invalidEmail}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              fullWidth
+              required
+              margin="dense"
+              id="password"
+              name="password"
+              label="Contraseña"
+              type={passwordType}
+              variant="filled"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Password />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={toggleShowPassword}
+                  >
+                    <InputAdornment position="end">
+                      {passwordType === "password" ? (
+                        <Visibility />
+                      ) : (
+                        <VisibilityOff />
+                      )}
                     </InputAdornment>
-                  ),
-                }}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <TextField
-                autoFocus
-                fullWidth
-                required
-                margin="dense"
-                id="password"
-                name="password"
-                label="Contraseña"
-                type={passwordType}
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Password />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <div
-                      style={{ cursor: "pointer" }}
-                      onClick={toggleShowPassword}
-                    >
-                      <InputAdornment position="end">
-                        {passwordType === "password" ? (
-                          <Visibility />
-                        ) : (
-                          <VisibilityOff />
-                        )}
-                      </InputAdornment>
-                    </div>
-                  ),
-                }}
-                helperText={invalidPassword}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button variant="contained" color="primary" onClick={onLogin}>
-                Ingresar
-              </Button>
-            </DialogActions>
-          </div>
+                  </div>
+                ),
+              }}
+              helperText={invalidPassword}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button variant="contained" color="primary" onClick={onLogin}>
+              Ingresar
+            </Button>
+          </DialogActions>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 };
 

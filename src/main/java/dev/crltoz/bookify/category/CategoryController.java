@@ -1,5 +1,6 @@
 package dev.crltoz.bookify.category;
 
+import dev.crltoz.bookify.user.UserService;
 import dev.crltoz.bookify.util.JwtUtil;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<List<Category>> allCategories() {
@@ -27,7 +28,7 @@ public class CategoryController {
 
     @PostMapping("/add")
     public ResponseEntity<Optional<Category>> addCategory(@RequestBody CreateCategoryRequest category, @RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 
@@ -42,7 +43,7 @@ public class CategoryController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 

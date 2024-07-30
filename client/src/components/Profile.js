@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 import DialogText from "./DialogText";
 
-const Profile = ({ email, name, lastName, isLogged, onUpdate }) => {
+const Profile = ({ user, onUpdate }) => {
   const [editNames, setEditNames] = useState(false);
   const [editPassword, setEditPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -25,15 +25,15 @@ const Profile = ({ email, name, lastName, isLogged, onUpdate }) => {
   const [dialogText, setDialogText] = useState("");
   const [passwordType, setPasswordType] = useState("password");
 
-  if (!isLogged) {
+  if (!user) {
     window.location.href = "/login";
     return;
   }
 
   useEffect(() => {
-    setEditableName(name);
-    setEditableLastName(lastName);
-  }, [name, lastName]);
+    setEditableName(user.name);
+    setEditableLastName(user.lastName);
+  }, [user.name, user.lastName]);
 
   const validatePassword = (password) => {
     const regex = /^.{8,}$/;
@@ -175,194 +175,186 @@ const Profile = ({ email, name, lastName, isLogged, onUpdate }) => {
   };
 
   return (
-    <React.Fragment>
-      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary mt-5">
-        <DialogText text={dialogText} onClose={() => setDialogText("")} />
-        <div
-          className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
-          style={{ width: "100%", maxWidth: "400px" }}
-        >
-          <h1 className="text-center mb-4">Perfil</h1>
-          <DialogContent>
-            <DialogContentText>
-              Aquí están todos los datos relacionados a tu cuenta
-            </DialogContentText>
-            <TextField
-              autoFocus
-              disabled
-              fullWidth
-              margin="dense"
-              id="email"
-              name="email"
-              label="Email"
-              type="email"
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email />
-                  </InputAdornment>
-                ),
-              }}
-              value={email}
-              helperText="El email no se puede cambiar."
-            />
-            <TextField
-              autoFocus
-              fullWidth
-              disabled={!editNames}
-              margin="dense"
-              id="firstName"
-              name="firstName"
-              label="Nombre"
-              type="text"
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountCircle />
-                  </InputAdornment>
-                ),
-              }}
-              value={editableName}
-              helperText={invalidName}
-              onChange={(e) => setEditableName(e.target.value)}
-            />
-            <TextField
-              autoFocus
-              fullWidth
-              disabled={!editNames}
-              margin="dense"
-              id="lastName"
-              name="lastName"
-              label="Apellido"
-              type="text"
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountCircle />
-                  </InputAdornment>
-                ),
-              }}
-              value={editableLastName}
-              helperText={invalidLastName}
-              onChange={(e) => setEditableLastName(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            {editNames && (
-              <Button
-                variant="outlined"
-                color="info"
-                onClick={() => handleNameChange(false)}
-              >
-                {"Cancelar"}
-              </Button>
-            )}
+    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary mt-5">
+      <DialogText text={dialogText} onClose={() => setDialogText("")} />
+      <div
+        className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <h1 className="text-center mb-4">Perfil</h1>
+        <DialogContent>
+          <DialogContentText>
+            Aquí están todos los datos relacionados a tu cuenta
+          </DialogContentText>
+          <TextField
+            autoFocus
+            disabled
+            fullWidth
+            margin="dense"
+            id="email"
+            name="email"
+            label="Email"
+            type="email"
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email />
+                </InputAdornment>
+              ),
+            }}
+            value={user.email}
+            helperText="El email no se puede cambiar."
+          />
+          <TextField
+            autoFocus
+            fullWidth
+            disabled={!editNames}
+            margin="dense"
+            id="firstName"
+            name="firstName"
+            label="Nombre"
+            type="text"
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircle />
+                </InputAdornment>
+              ),
+            }}
+            value={editableName}
+            helperText={invalidName}
+            onChange={(e) => setEditableName(e.target.value)}
+          />
+          <TextField
+            autoFocus
+            fullWidth
+            disabled={!editNames}
+            margin="dense"
+            id="lastName"
+            name="lastName"
+            label="Apellido"
+            type="text"
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccountCircle />
+                </InputAdornment>
+              ),
+            }}
+            value={editableLastName}
+            helperText={invalidLastName}
+            onChange={(e) => setEditableLastName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          {editNames && (
             <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleNameChange(true)}
+              variant="outlined"
+              color="info"
+              onClick={() => handleNameChange(false)}
             >
-              {editNames ? "Guardar nombres" : "Editar nombres"}
+              {"Cancelar"}
             </Button>
-          </DialogActions>
-          <DialogContent>
-            <TextField
-              autoFocus
-              fullWidth
-              disabled={!editPassword}
-              margin="dense"
-              id="oldPassword"
-              name="oldPassword"
-              label="Contraseña actual"
-              type={passwordType}
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Password />
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleNameChange(true)}
+          >
+            {editNames ? "Guardar nombres" : "Editar nombres"}
+          </Button>
+        </DialogActions>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            disabled={!editPassword}
+            margin="dense"
+            id="oldPassword"
+            name="oldPassword"
+            label="Contraseña actual"
+            type={passwordType}
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Password />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <div style={{ cursor: "pointer" }} onClick={toggleShowPassword}>
+                  <InputAdornment position="end">
+                    {passwordType === "password" ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
                   </InputAdornment>
-                ),
-                endAdornment: (
-                  <div
-                    style={{ cursor: "pointer" }}
-                    onClick={toggleShowPassword}
-                  >
-                    <InputAdornment position="end">
-                      {passwordType === "password" ? (
-                        <Visibility />
-                      ) : (
-                        <VisibilityOff />
-                      )}
-                    </InputAdornment>
-                  </div>
-                ),
-              }}
-              placeholder="********"
-              helperText={invalidOldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              value={oldPassword}
-            />
-            <TextField
-              autoFocus
-              fullWidth
-              disabled={!editPassword}
-              margin="dense"
-              id="password"
-              name="password"
-              label="Contraseña nueva"
-              type={passwordType}
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Password />
+                </div>
+              ),
+            }}
+            placeholder="********"
+            helperText={invalidOldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            value={oldPassword}
+          />
+          <TextField
+            autoFocus
+            fullWidth
+            disabled={!editPassword}
+            margin="dense"
+            id="password"
+            name="password"
+            label="Contraseña nueva"
+            type={passwordType}
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Password />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <div style={{ cursor: "pointer" }} onClick={toggleShowPassword}>
+                  <InputAdornment position="end">
+                    {passwordType === "password" ? (
+                      <Visibility />
+                    ) : (
+                      <VisibilityOff />
+                    )}
                   </InputAdornment>
-                ),
-                endAdornment: (
-                  <div
-                    style={{ cursor: "pointer" }}
-                    onClick={toggleShowPassword}
-                  >
-                    <InputAdornment position="end">
-                      {passwordType === "password" ? (
-                        <Visibility />
-                      ) : (
-                        <VisibilityOff />
-                      )}
-                    </InputAdornment>
-                  </div>
-                ),
-              }}
-              placeholder="********"
-              helperText={invalidPassword}
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
-          </DialogContent>
-          <DialogActions>
-            {editPassword && (
-              <Button
-                variant="outlined"
-                color="info"
-                onClick={() => handlePasswordChange(false)}
-              >
-                {"Cancelar"}
-              </Button>
-            )}
+                </div>
+              ),
+            }}
+            placeholder="********"
+            helperText={invalidPassword}
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+          />
+        </DialogContent>
+        <DialogActions>
+          {editPassword && (
             <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handlePasswordChange(true)}
+              variant="outlined"
+              color="info"
+              onClick={() => handlePasswordChange(false)}
             >
-              {editPassword ? "Guardar contraseña" : "Cambiar contraseña"}
+              {"Cancelar"}
             </Button>
-          </DialogActions>
-        </div>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handlePasswordChange(true)}
+          >
+            {editPassword ? "Guardar contraseña" : "Cambiar contraseña"}
+          </Button>
+        </DialogActions>
       </div>
-    </React.Fragment>
+    </div>
   );
 };
 

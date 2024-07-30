@@ -24,6 +24,7 @@ public class JwtUtil {
     public String generateToken(User user) {
         return JWT.create()
                 .withSubject(user.getEmail())
+                .withClaim("id", user.getId())
                 .withClaim("name", user.getFirstName())
                 .withClaim("lastName", user.getLastName())
                 .withClaim("isAdmin", user.isAdmin())
@@ -84,5 +85,12 @@ public class JwtUtil {
 
         DecodedJWT claims = extractClaims(token);
         return claims.getSubject();
+    }
+
+    public String getId(String token) {
+        if (!isValidToken(token)) return null;
+
+        DecodedJWT claims = extractClaims(token);
+        return claims.getClaim("id").asString();
     }
 }

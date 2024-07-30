@@ -2,7 +2,9 @@ package dev.crltoz.bookify.product;
 
 import dev.crltoz.bookify.category.Category;
 import dev.crltoz.bookify.category.CategoryService;
+import dev.crltoz.bookify.user.UserService;
 import dev.crltoz.bookify.util.JwtUtil;
+import dev.crltoz.bookify.websocket.WebSocketService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.WebSocket;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -27,12 +30,12 @@ public class ProductController {
     private CategoryService categoryService;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
         // check if is admin
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
@@ -62,7 +65,7 @@ public class ProductController {
     @PostMapping("/add")
     public ResponseEntity<Product> addProduct(@RequestBody CreateProductRequest productRequest, @RequestHeader("Authorization") String token) {
         // check if is admin
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 
@@ -107,7 +110,7 @@ public class ProductController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
         // check if is admin
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
 
@@ -129,7 +132,7 @@ public class ProductController {
     @PostMapping("/edit/{id}")
     public ResponseEntity<Product> editProduct(@PathVariable ObjectId id, @RequestBody CreateProductRequest productRequest, @RequestHeader("Authorization") String token) {
         // check if is admin
-        if (!jwtUtil.isAdmin(token)) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 

@@ -6,42 +6,31 @@ import AdminListProducts from "./AdminListProducts";
 import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
 import EditCategory from "./EditCategory";
+import AdminListUsers from "./AdminListUsers";
 
-const Admin = ({ token }) => {
+const Admin = ({ user }) => {
   const [showProducts, setShowProducts] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
   const [createProduct, setCreateProduct] = useState(false);
   const [dialogText, setDialogText] = useState("");
   const [createCategory, setCreateCategory] = useState(false);
 
   useEffect(() => {
-    checkValidToken();
-  }, [token]);
-
-  const checkValidToken = async () => {
-    if (token) {
-      try {
-        const response = await axios.get("/users/validateAdmin");
-        if (response.status != 200) {
-          // move to home, is not admin or token is invalid
-          window.location.href = "/";
-        }
-      } catch (e) {
-        console.error(e);
-        // move to home, error
-        window.location.href = "/";
-      }
-    } else {
-      // move to home, no token
+    if (!user || !user.isAdmin) {
       window.location.href = "/";
     }
-  }
+  }, [user]);
 
   const handleListProducts = () => {
-    if (showProducts) {
-      setShowProducts(false);
-      return;
-    }
-    setShowProducts(true);
+    setShowProducts(!showProducts);
+
+    if (!showProducts) setShowUsers(false);
+  };
+
+  const handleListUsers = () => {
+    setShowUsers(!showUsers);
+
+    if (!showUsers) setShowProducts(false);
   };
 
   const onCloseDialogText = () => {
@@ -79,6 +68,8 @@ const Admin = ({ token }) => {
         case 401: {
           setDialogText("No tienes permisos para crear productos.");
           setCreateProduct(false);
+          // move to main
+          window.location.href = "/";
           break;
         }
         default: {
@@ -177,9 +168,23 @@ const Admin = ({ token }) => {
               </span>
             </div>
           </div>
+          <div className="row">
+            <div className="col-12 col-lg-6">
+              <button className="btn btn-primary m-4" onClick={handleListUsers}>
+                {showUsers ? "Ocultar usuarios" : "Listar usuarios"}
+              </button>
+            </div>
+            <div className="col d-flex justify-content-center align-items-center">
+              <span>
+                Muestra todos los usuarios registrados y opciones para
+                modificarlos.
+              </span>
+            </div>
+          </div>
         </div>
 
         {showProducts && <AdminListProducts />}
+        {showUsers && <AdminListUsers selfUser={user} />}
         <EditProduct
           open={createProduct}
           product={{}}

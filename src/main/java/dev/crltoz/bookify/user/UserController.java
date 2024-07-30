@@ -1,6 +1,7 @@
 package dev.crltoz.bookify.user;
 
 import dev.crltoz.bookify.util.JwtUtil;
+import dev.crltoz.bookify.websocket.WebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -34,26 +36,60 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
     // Security for login and register
     private final ConcurrentHashMap<String, Pair<Integer, Long>> requestCounts = new ConcurrentHashMap<>();
     private final long RATE_LIMIT_TIME_WINDOW = TimeUnit.MINUTES.toMillis(1);
 
     @GetMapping
-    public ResponseEntity<List<User>> allUsers(@RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isAdmin(token)) {
+    public ResponseEntity<List<UserProjection>> allUsers(@RequestHeader("Authorization") String token) {
+        if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
-    }
 
-    @GetMapping("/validateAdmin")
-    public ResponseEntity<Boolean> validateAdminToken(@RequestHeader("Authorization") String token) {
-        return new ResponseEntity<>(jwtUtil.isAdmin(token), HttpStatus.OK);
+        List<UserProjection> users = userService.getAllUsersProjected();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<Boolean> validateToken(@RequestHeader("Authorization") String token) {
-        return new ResponseEntity<>(jwtUtil.isValidToken(token), HttpStatus.OK);
+    public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String token) {
+        boolean isValid = jwtUtil.isValidToken(token);
+        if (!isValid) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // check if admin is the same as in the token
+        boolean isAdmin = userService.isAdmin(token);
+        boolean isAdminInToken = jwtUtil.isAdmin(token);
+
+        if (isAdminInToken != isAdmin) {
+            // tells the client to renovate the token
+            return new ResponseEntity<>("null", HttpStatus.ACCEPTED);
+        }
+
+        return new ResponseEntity<>("null", HttpStatus.OK);
+    }
+
+    @GetMapping("/renovate")
+    public ResponseEntity<String> renovateToken(@RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.getUserById(new ObjectId(userId)).orElse(null);
+        if (user == null) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String newToken = jwtUtil.generateToken(user);
+        return new ResponseEntity<>(newToken, HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
@@ -201,10 +237,7 @@ public class UserController {
                         // update password
                         u.setPassword(Password.hashPassword(updatePasswordRequest.getNewPassword()));
                         userService.save(u);
-
-                        // generate new jwt and set it
-                        String newToken = jwtUtil.generateToken(u);
-                        return new ResponseEntity<>(newToken, HttpStatus.OK);
+                        return new ResponseEntity<>("null", HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
                     }
@@ -215,6 +248,45 @@ public class UserController {
             }
         }
         return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/update/setAdmin")
+    public ResponseEntity<String> setAdmin(@RequestBody SetAdminRequest setAdminRequest, @RequestHeader("Authorization") String token) {
+        if (!userService.isAdmin(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.getUserById(new ObjectId(userId)).orElse(null);
+        if (user == null) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!ObjectId.isValid(setAdminRequest.getId())) {
+            return new ResponseEntity<>("null", HttpStatus.BAD_REQUEST);
+        }
+
+        User userToUpdate = userService.getUserById(new ObjectId(setAdminRequest.getId())).orElse(null);
+        if (userToUpdate == null) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        // cannot update own admin status
+        if (Objects.equals(userToUpdate, user)) {
+            return new ResponseEntity<>("null", HttpStatus.BAD_REQUEST);
+        }
+
+        LOGGER.info("Update admin status for user: " + userToUpdate.getEmail() + " to: " + setAdminRequest.getIsAdmin());
+        userToUpdate.setAdmin(setAdminRequest.getIsAdmin());
+        userService.save(userToUpdate);
+
+        // send event to all clients to update jwt from this user
+        webSocketService.sendMessage("updateUser", List.of(userToUpdate.getId()));
+        return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
     private String getClientIp(HttpServletRequest request) {

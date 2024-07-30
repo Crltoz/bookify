@@ -11,7 +11,11 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function DeleteProduct({ product, confirmDelete, cancelDelete }) {
+export default function DeleteProduct({
+  product,
+  confirmDelete,
+  cancelDelete,
+}) {
   const handleConfirm = () => {
     confirmDelete(product);
   };
@@ -21,25 +25,27 @@ export default function DeleteProduct({ product, confirmDelete, cancelDelete }) 
   };
 
   return (
-    <React.Fragment>
-      <Dialog
-        open={product != null}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={handleClose}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle>{"Delete product confirmation."}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
-            Are you sure you want to delete '{product?.name || "null"}' product?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} variant="contained">Cancelar</Button>
-          <Button onClick={handleConfirm} variant="contained" color="error">Borrar</Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
+    <Dialog
+      open={product != null}
+      TransitionComponent={Transition}
+      keepMounted
+      onClose={handleClose}
+      aria-describedby="alert-dialog-slide-description"
+    >
+      <DialogTitle>{"Delete product confirmation."}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-slide-description">
+          Are you sure you want to delete '{product?.name || "null"}' product?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} variant="contained">
+          Cancelar
+        </Button>
+        <Button onClick={handleConfirm} variant="contained" color="error">
+          Borrar
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

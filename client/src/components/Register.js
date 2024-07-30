@@ -74,7 +74,9 @@ const Register = () => {
 
             // set the token in the local storage and in axios headers
             window.localStorage.setItem("token", response.data);
-            axios.defaults.headers.common["Authorization"] = `Bearer ${response.data}`;
+            axios.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${response.data}`;
             break;
           }
           case 400: {
@@ -120,111 +122,109 @@ const Register = () => {
   };
 
   return (
-    <React.Fragment>
-      <div>
-        <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary">
-          <DialogText text={dialogText} onClose={handleDialogClose} />
-          <div
-            className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
-            style={{ width: "100%", maxWidth: "400px" }}
-          >
-            <h1 className="text-center mb-4">Crear cuenta</h1>
-            <DialogContent>
-              <DialogContentText>
-                Bienvenido a la página de registro. Por favor, ingresa tus datos
-                para crear una cuenta.
-              </DialogContentText>
-              <TextField
-                autoFocus
-                required
-                fullWidth
-                error={invalidEmail.length > 0}
-                margin="dense"
-                id="email"
-                name="email"
-                label="Email"
-                type="email"
-                variant="filled"
-                helperText={invalidEmail}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email />
-                    </InputAdornment>
-                  ),
-                }}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <TextField
-                autoFocus
-                fullWidth
-                required
-                margin="dense"
-                id="password"
-                name="password"
-                label="Contraseña"
-                type="password"
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Password />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText={invalidPassword}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <TextField
-                autoFocus
-                fullWidth
-                required
-                margin="dense"
-                id="name"
-                name="name"
-                label="Nombre"
-                type="text"
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountCircle />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText={invalidName}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <TextField
-                autoFocus
-                fullWidth
-                required
-                margin="dense"
-                id="lastName"
-                name="lastName"
-                label="Apellido"
-                type="text"
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountCircle />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText={invalidLastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button variant="contained" color="primary" onClick={onRegister}>
-                Registrar
-              </Button>
-            </DialogActions>
-          </div>
+    <div>
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary">
+        <DialogText text={dialogText} onClose={handleDialogClose} />
+        <div
+          className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
+          style={{ width: "100%", maxWidth: "400px" }}
+        >
+          <h1 className="text-center mb-4">Crear cuenta</h1>
+          <DialogContent>
+            <DialogContentText>
+              Bienvenido a la página de registro. Por favor, ingresa tus datos
+              para crear una cuenta.
+            </DialogContentText>
+            <TextField
+              autoFocus
+              required
+              fullWidth
+              error={invalidEmail.length > 0}
+              margin="dense"
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              variant="filled"
+              helperText={invalidEmail}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              fullWidth
+              required
+              margin="dense"
+              id="password"
+              name="password"
+              label="Contraseña"
+              type="password"
+              variant="filled"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Password />
+                  </InputAdornment>
+                ),
+              }}
+              helperText={invalidPassword}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              fullWidth
+              required
+              margin="dense"
+              id="name"
+              name="name"
+              label="Nombre"
+              type="text"
+              variant="filled"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccountCircle />
+                  </InputAdornment>
+                ),
+              }}
+              helperText={invalidName}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              fullWidth
+              required
+              margin="dense"
+              id="lastName"
+              name="lastName"
+              label="Apellido"
+              type="text"
+              variant="filled"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccountCircle />
+                  </InputAdornment>
+                ),
+              }}
+              helperText={invalidLastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button variant="contained" color="primary" onClick={onRegister}>
+              Registrar
+            </Button>
+          </DialogActions>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 };
 

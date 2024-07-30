@@ -7,11 +7,11 @@ const Footer = () => {
     <footer className="container-fluid footer">
       <div className="row lg-2">
         <div className="col d-flex justify-content-start">
-            <img src={logo} alt="Bookify" height="30" />
-            <p className="ms-3">© 2024 </p>
+          <img src={logo} alt="Bookify" height="30" />
+          <p className="ms-3">© 2024 </p>
         </div>
         <div className="col d-flex justify-content-end">
-            <p>Contáctanos</p>
+          <p>Contáctanos</p>
         </div>
       </div>
     </footer>

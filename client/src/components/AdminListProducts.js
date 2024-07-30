@@ -123,7 +123,9 @@ const AdminListProducts = () => {
                   }}
                 />
                 <div className="card-body">
-                  <p className="card-text">ID: <b>{product.id}</b></p>
+                  <p className="card-text">
+                    ID: <b>{product.id}</b>
+                  </p>
                   <h5 className="card-title">{product.name}</h5>
                   <p className="card-text">{product.description}</p>
 

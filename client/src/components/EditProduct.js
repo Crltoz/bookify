@@ -43,7 +43,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <DialogText text={dialogText} onClose={onCloseDialogText} />
       <Dialog
         open={open}
@@ -184,6 +184,6 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }

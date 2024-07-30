@@ -5,9 +5,10 @@ import { Menu, MenuItem, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
 import LogoutIcon from "@mui/icons-material/Logout";
+import AdminPanelSettingIcon from "@mui/icons-material/AdminPanelSettings";
 import axios from "axios";
 
-const Header = ({ isLogged, name }) => {
+const Header = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -37,6 +38,11 @@ const Header = ({ isLogged, name }) => {
     window.location.href = "/reservations";
   };
 
+  const goToAdminPanel = () => {
+    handleClose();
+    window.location.href = "/admin";
+  };
+
   const handleLogout = () => {
     handleClose();
     window.localStorage.removeItem("token");
@@ -56,14 +62,20 @@ const Header = ({ isLogged, name }) => {
             <a href="/">
               <img src={logo} alt="Logo" className="logo-img" />
             </a>
-            <span className="d-none d-lg-block ms-2">Explora, reserva y disfruta</span>
-            {!isLogged && (<span className="d-lg-none d-block ms-2">Explora, reserva y disfruta</span>)}
+            <span className="d-none d-md-block ms-2">
+              Explora, reserva y disfruta
+            </span>
+            {!user && (
+              <span className="d-md-none d-block ms-2">
+                Explora, reserva y disfruta
+              </span>
+            )}
           </div>
-          {isLogged ? (
+          {user ? (
             <div className="d-flex align-items-center">
-              <span className="me-2">{name}</span>
+              <span className="me-2">{user.name}</span>
               <div className="user-initial-circle" onClick={handleClick}>
-                {getInitial(name)}
+                {getInitial(user.name)}
               </div>
               <Menu
                 id="user-menu"
@@ -73,7 +85,7 @@ const Header = ({ isLogged, name }) => {
                 slotProps={{
                   paper: {
                     style: {
-                      width: "20ch"
+                      width: "20ch",
                     },
                   },
                 }}
@@ -103,6 +115,20 @@ const Header = ({ isLogged, name }) => {
                     </div>
                   </MenuItem>
                 </div>
+                {user.isAdmin && (
+                  <div className="row">
+                    <MenuItem onClick={goToAdminPanel}>
+                      <div className="col-lg-4 d-flex justify-content-left">
+                        <IconButton>
+                          <AdminPanelSettingIcon />
+                        </IconButton>
+                      </div>
+                      <div className="col d-flex justify-content-left">
+                        <a>Admin Panel</a>
+                      </div>
+                    </MenuItem>
+                  </div>
+                )}
                 <div className="row">
                   <MenuItem onClick={handleLogout}>
                     <div className="col-lg-4 d-flex justify-content-left">
@@ -134,7 +160,7 @@ const Header = ({ isLogged, name }) => {
             </div>
           )}
         </div>
-        {!isLogged && (
+        {!user && (
           <div className="header-buttons d-lg-none d-lg-flex">
             <button
               className="btn btn-secondary create-account"
