@@ -15,15 +15,21 @@ public class User {
     @Id
     private String id;
 
-    private String username;
+    private String email;
+
+    private String firstName;
+
+    private String lastName;
 
     private byte[] password;
 
     private boolean isAdmin;
 
-    public User(String username, byte[] password, boolean isAdmin) {
-        this.username = username;
+    public User(String email, byte[] password, boolean isAdmin, String firstName, String lastName) {
+        this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 }

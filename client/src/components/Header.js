@@ -1,10 +1,12 @@
 import React from "react";
 import "./css/Header.css";
 import logo from "../assets/img/bookify-logo-big.webp";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faLocationPin, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 const Header = () => {
+  const goToRegister = () => {
+    window.location.href = "/register";
+  };
+
   return (
     <header className="header fixed-top">
       <div className="header-top container-fluid">
@@ -14,13 +16,13 @@ const Header = () => {
             <span className="d-lg-block ms-2">Explora, reserva y disfruta</span>
           </div>
           <div className="header-buttons d-none d-lg-flex">
-            <button className="btn btn-secondary create-account">Crear cuenta</button>
-            <button className="btn btn-primary login">Iniciar sesión</button>
+            <button className="btn btn-secondary create-account" onClick={goToRegister}>Crear cuenta</button>
+            <button className="btn btn-primary text-white">Iniciar sesión</button>
           </div>
         </div>
         <div className="header-buttons d-lg-none d-lg-flex">
-            <button className="btn btn-secondary create-account">Crear cuenta</button>
-            <button className="btn btn-primary login">Iniciar sesión</button>
+            <button className="btn btn-secondary create-account" onClick={goToRegister}>Crear cuenta</button>
+            <button className="btn btn-primary text-white">Iniciar sesión</button>
           </div>
       </div>
     </header>

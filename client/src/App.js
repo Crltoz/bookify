@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Admin from "./components/Admin";
 import Footer from "./components/Footer";
+import Register from "./components/Register";
 
 axios.defaults.baseURL = "http://localhost:8080/api";
 
@@ -37,6 +38,9 @@ function App() {
           </Route>
           <Route path="/administracion" element={<Layout />}>
             <Route index element={<Admin />} />
+          </Route>
+          <Route path="/register" element={<Layout />}>
+            <Route index element={<Register />} />
           </Route>
         </Routes>
         <Footer />
