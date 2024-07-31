@@ -9,9 +9,13 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogText from "./DialogText";
 import axios from "axios";
 import { Autocomplete } from "@mui/material";
+import ProductFeature from "./ProductFeature";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function EditProduct({ open, onConfirm, onCancel, product }) {
   const [images, setImages] = React.useState([]);
+  const [features, setFeatures] = React.useState([]);
   const [dialogText, setDialogText] = React.useState("");
   const [categories, setCategories] = React.useState([]);
   const [categoryName, setCategoryName] = React.useState("");
@@ -35,6 +39,35 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
       setImages([...product.images]);
     } else {
       setImages([...images, ""]);
+    }
+  };
+
+  const addFeature = () => {
+    if (product && product.features) {
+      product.features.push(["sell f05b", "Caracteristica " + (product.features.length + 1)]);
+      setFeatures([...product.features]);
+    } else {
+      setFeatures([...features, ["sell f05b", "Caracteristica " + (features.length + 1)]]);
+    }
+  };
+
+  const removeFeature = (index) => {
+    if (product && product.features) {
+      product.features.splice(index, 1);
+      setFeatures([...product.features]);
+    } else {
+      features.splice(index, 1);
+      setFeatures([...features]);
+    }
+  };
+
+  const changeFeature = (index, subIndex, value) => {
+    if (product && product.features) {
+      product.features[index][subIndex] = value;
+      setFeatures([...product.features]);
+    } else {
+      features[index][subIndex] = value;
+      setFeatures([...features]);
     }
   };
 
@@ -77,6 +110,12 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             if (newProduct.description.length === 0) {
               setDialogText("Debe agregar una descripción al producto.");
               return;
+            }
+
+            // set features
+            for (let feature of features) {
+              newProduct.features = [];
+              newProduct.features.push(feature);
             }
 
             // get category by name and set id
@@ -140,6 +179,48 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             )}
           />
           <input type="hidden" name="categoryName" value={categoryName} />
+          {product?.features ? product.features.map((feature, featureIndex) => (
+            <div key={featureIndex} className="p-3 mt-2 mb-2 border">
+              <span>Característica #{featureIndex + 1}</span>
+              <hr></hr>
+              <ProductFeature
+                icon={feature[0]}
+                name={feature[1]}
+                onChangeIcon={(value) => changeFeature(featureIndex, 0, value)}
+                onChangeName={(value) => changeFeature(featureIndex, 1, value)}
+              />
+              <Button className="mt-2" color="error" variant="outlined">
+                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                <span
+                  className="ms-2"
+                  onClick={() => removeFeature(featureIndex)}
+                >
+                  Borrar
+                </span>
+              </Button>
+            </div>
+          )) :
+          features.map((feature, featureIndex) => (
+            <div key={featureIndex} className="p-3 mt-2 mb-2 border">
+              <span>Característica #{featureIndex + 1}</span>
+              <hr></hr>
+              <ProductFeature
+                icon={feature[0]}
+                name={feature[1]}
+                onChangeIcon={(value) => changeFeature(featureIndex, 0, value)}
+                onChangeName={(value) => changeFeature(featureIndex, 1, value)}
+              />
+              <Button className="mt-2" color="error" variant="outlined">
+                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                <span
+                  className="ms-2"
+                  onClick={() => removeFeature(featureIndex)}
+                >
+                  Borrar
+                </span>
+              </Button>
+            </div>
+          ))}
           {product?.images
             ? product.images.map((image, index) => (
                 <TextField
@@ -173,8 +254,13 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
               ))}
         </DialogContent>
         <DialogActions>
+          <Button onClick={addFeature} variant="contained" color="info">
+            <FontAwesomeIcon icon={faCirclePlus} />{" "}
+            <span style={{ marginLeft: "5px" }}>característica</span>
+          </Button>
           <Button onClick={addImage} variant="contained" color="info">
-            Añadir imagen
+            <FontAwesomeIcon icon={faCirclePlus} />{" "}
+            <span style={{ marginLeft: "5px" }}>imagen</span>
           </Button>
           <Button onClick={onCancel} variant="outlined" color="error">
             Cancelar

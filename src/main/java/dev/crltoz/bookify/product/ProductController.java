@@ -94,7 +94,8 @@ public class ProductController {
                 productRequest.getName(),
                 productRequest.getDescription(),
                 productRequest.getImages(),
-                categoryId
+                categoryId,
+                productRequest.getFeatures()
         );
 
         productService.save(product);
@@ -168,7 +169,8 @@ public class ProductController {
                 productRequest.getName(),
                 productRequest.getDescription(),
                 productRequest.getImages(),
-                categoryId
+                categoryId,
+                productRequest.getFeatures()
         );
         updatedProduct.setId(id.toString());
 
