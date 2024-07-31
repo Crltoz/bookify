@@ -12,17 +12,19 @@ import {
 import ProductInfo from "./ProductInfo";
 
 const Home = ({ products }) => {
-  if (!products) products = [];
-
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [limitedProducts, setLimitedProducts] = useState([]);
 
   useEffect(() => {
     setLimitedProducts(products.slice(page * 10 - 10, page * 10));
-  }, [page, products.length]);
+    if (selectedItem) { 
+      const selectedItemUpdated = products.find((product) => product.id === selectedItem.id);
+      setSelectedItem(selectedItemUpdated);
+    }
+  }, [page, products]);
 
-  const onSelectItem = (product) => () => {
+  const onSelectItem = (product) => {
     setSelectedItem(product);
   };
 
@@ -57,7 +59,7 @@ const Home = ({ products }) => {
         </div>
       </div>
 
-      <ProductInfo product={selectedItem} onClose={onSelectItem(null)} />
+      <ProductInfo product={selectedItem} onClose={() => onSelectItem(null)} />
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
@@ -68,10 +70,10 @@ const Home = ({ products }) => {
                   src={product.images[0] || "https://via.placeholder.com/300"}
                   className="card-img-left user-select-none rounded image-effect"
                   alt={product.name}
-                  onClick={onSelectItem(product)}
+                  onClick={() => onSelectItem(product)}
                 />
                 <div className="card-body d-flex flex-column justify-content-between align-items-center">
-                  <h5 className="card-title" onClick={onSelectItem(product)}>
+                  <h5 className="card-title" onClick={() => onSelectItem(product)}>
                     {product.name}
                   </h5>
                   <p className="card-text">{product.description}</p>
@@ -90,10 +92,10 @@ const Home = ({ products }) => {
                   src={product.images[0] || "https://via.placeholder.com/300"}
                   className="card-img-top user-select-none rounded image-effect"
                   alt={product.name}
-                  onClick={onSelectItem(product)}
+                  onClick={() => onSelectItem(product)}
                 />
                 <div className="card-body">
-                  <h5 className="card-title" onClick={onSelectItem(product)}>
+                  <h5 className="card-title" onClick={() => onSelectItem(product)}>
                     {product.name}
                   </h5>
                   <p className="card-text">{product.description}</p>

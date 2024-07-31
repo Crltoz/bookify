@@ -1,10 +1,6 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemButton from "@mui/material/ListItemButton";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -13,12 +9,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faCirclePlus,
+  faList,
   faPhotoFilm,
 } from "@fortawesome/free-solid-svg-icons";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import "./css/ProductInfo.css";
 import DialogCarousel from "./DialogCarousel";
+import { TextField, InputAdornment, Icon } from "@mui/material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="right" ref={ref} {...props} />;
@@ -113,20 +111,33 @@ export default function ProductInfo({ product, onClose }) {
           </button>
         </div>
       </div>
-      <List>
-        <ListItemButton
-          variant="raised"
-          style={{ backgroundColor: "transparent", cursor: "default" }}
-          disableRipple
-          disableTouchRipple
-        >
-          <ListItemText
-            primary="Descripción"
-            secondary={product?.description}
-          />
-        </ListItemButton>
-        <Divider />
-      </List>
+      <hr></hr>
+      <div className="container-fluid">
+        <div className="row m-3 mb-0">
+          <h5>
+            <FontAwesomeIcon icon={faList} /> Descripción
+          </h5>
+        </div>
+
+        <div className="row m-4 mb-0 mt-0">{product?.description}</div>
+        <hr></hr>
+
+        <div className="row m-3 mb-0 d-flex">
+          <h5>
+            <FontAwesomeIcon icon={faCirclePlus} /> Características
+          </h5>
+          {product?.features &&
+            product.features.map((feature, index) => (
+              <div className="col-sm-3 mt-2 mb-2" key={index}>
+                <div className="d-flex align-items-center">
+                  <Icon color="primary">{feature[0]}</Icon>{" "}
+                  <span style={{ marginLeft: "5px" }}>{feature[1]}</span>
+                </div>
+              </div>
+            ))}
+        </div>
+        <hr></hr>
+      </div>
     </Dialog>
   );
 }
