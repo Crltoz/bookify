@@ -29,11 +29,12 @@ function isLogged() {
 }
 
 function App() {
-  const [products, setProducts] = useState();
+  const [products, setProducts] = useState([]);
   const [user, setUser] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [ws, setWs] = useState(null);
   const userRef = useRef(user);
+  const productRef = useRef(products);
 
   const getProducts = async () => {
     try {
@@ -119,6 +120,10 @@ function App() {
   }, []);
 
   useEffect(() => {
+    productRef.current = products;
+  }, [products]);
+
+  useEffect(() => {
     // create websocket
     if (ws == null) {
       const ws = new WebSocket("ws://localhost:8080/websocket-endpoint");
@@ -149,8 +154,35 @@ function App() {
           validateToken();
         }
         break;
+      case "updateProduct": {
+        // get specific product updated
+        const productId = args[0];
+        if (productRef.current.find((it) => it.id == productId)) {
+          updateProductFromList(productId);
+        }
+        break;
+      }
       default:
         console.log("Unknown event type: ", event);
+    }
+  };
+
+  const updateProductFromList = async (productId) => {
+    try {
+      const response = await axios.get(`/products/get/${productId}`);
+      const product = response.data;
+      const newProducts = [...productRef.current];
+      const index = newProducts.findIndex((it) => it.id == productId);
+
+      if (!product) {
+        newProducts.splice(index, 1);
+      } else {
+        newProducts[index] = product;
+      }
+
+      setProducts(newProducts);
+    } catch (e) {
+      console.error(e);
     }
   };
 
