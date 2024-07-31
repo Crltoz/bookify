@@ -44,10 +44,16 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
 
   const addFeature = () => {
     if (product && product.features) {
-      product.features.push(["sell f05b", "Caracteristica " + (product.features.length + 1)]);
+      product.features.push([
+        "sell f05b",
+        "Caracteristica " + (product.features.length + 1),
+      ]);
       setFeatures([...product.features]);
     } else {
-      setFeatures([...features, ["sell f05b", "Caracteristica " + (features.length + 1)]]);
+      setFeatures([
+        ...features,
+        ["sell f05b", "Caracteristica " + (features.length + 1)],
+      ]);
     }
   };
 
@@ -113,8 +119,8 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             }
 
             // set features
+            newProduct.features = [];
             for (let feature of features) {
-              newProduct.features = [];
               newProduct.features.push(feature);
             }
 
@@ -179,48 +185,57 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             )}
           />
           <input type="hidden" name="categoryName" value={categoryName} />
-          {product?.features ? product.features.map((feature, featureIndex) => (
-            <div key={featureIndex} className="p-3 mt-2 mb-2 border">
-              <span>Característica #{featureIndex + 1}</span>
-              <hr></hr>
-              <ProductFeature
-                icon={feature[0]}
-                name={feature[1]}
-                onChangeIcon={(value) => changeFeature(featureIndex, 0, value)}
-                onChangeName={(value) => changeFeature(featureIndex, 1, value)}
-              />
-              <Button className="mt-2" color="error" variant="outlined">
-                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
-                <span
-                  className="ms-2"
-                  onClick={() => removeFeature(featureIndex)}
-                >
-                  Borrar
-                </span>
-              </Button>
-            </div>
-          )) :
-          features.map((feature, featureIndex) => (
-            <div key={featureIndex} className="p-3 mt-2 mb-2 border">
-              <span>Característica #{featureIndex + 1}</span>
-              <hr></hr>
-              <ProductFeature
-                icon={feature[0]}
-                name={feature[1]}
-                onChangeIcon={(value) => changeFeature(featureIndex, 0, value)}
-                onChangeName={(value) => changeFeature(featureIndex, 1, value)}
-              />
-              <Button className="mt-2" color="error" variant="outlined">
-                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
-                <span
-                  className="ms-2"
-                  onClick={() => removeFeature(featureIndex)}
-                >
-                  Borrar
-                </span>
-              </Button>
-            </div>
-          ))}
+          {product?.features
+            ? product.features.map((feature, featureIndex) => (
+                <div key={featureIndex} className="p-3 mt-2 mb-2 border">
+                  <span>Característica #{featureIndex + 1}</span>
+                  <hr></hr>
+                  <ProductFeature
+                    icon={feature[0]}
+                    name={feature[1]}
+                    onChangeIcon={(value) =>
+                      changeFeature(featureIndex, 0, value)
+                    }
+                    onChangeName={(value) =>
+                      changeFeature(featureIndex, 1, value)
+                    }
+                  />
+                  <Button className="mt-2" color="error" variant="outlined">
+                    <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                    <span
+                      className="ms-2"
+                      onClick={() => removeFeature(featureIndex)}
+                    >
+                      Borrar
+                    </span>
+                  </Button>
+                </div>
+              ))
+            : features.map((feature, featureIndex) => (
+                <div key={featureIndex} className="p-3 mt-2 mb-2 border">
+                  <span>Característica #{featureIndex + 1}</span>
+                  <hr></hr>
+                  <ProductFeature
+                    icon={feature[0]}
+                    name={feature[1]}
+                    onChangeIcon={(value) =>
+                      changeFeature(featureIndex, 0, value)
+                    }
+                    onChangeName={(value) =>
+                      changeFeature(featureIndex, 1, value)
+                    }
+                  />
+                  <Button className="mt-2" color="error" variant="outlined">
+                    <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                    <span
+                      className="ms-2"
+                      onClick={() => removeFeature(featureIndex)}
+                    >
+                      Borrar
+                    </span>
+                  </Button>
+                </div>
+              ))}
           {product?.images
             ? product.images.map((image, index) => (
                 <TextField
