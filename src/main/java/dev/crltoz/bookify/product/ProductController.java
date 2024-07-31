@@ -32,6 +32,9 @@ public class ProductController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
     @GetMapping
     public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
         // check if is admin
@@ -175,6 +178,9 @@ public class ProductController {
         updatedProduct.setId(id.toString());
 
         productService.save(updatedProduct);
+
+        // send websocket message
+        webSocketService.sendMessage("updateProduct", List.of(id.toString()));
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 }
