@@ -11,6 +11,7 @@ import {
   faCirclePlus,
   faList,
   faPhotoFilm,
+  faShare,
 } from "@fortawesome/free-solid-svg-icons";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
@@ -21,6 +22,7 @@ import axios from "axios";
 import { subscribe, unsubscribe } from "../events";
 import Loading from "../Loading";
 import ProductInfoLoader from "./ProductInfoLoader";
+import Share from "./Share";
 
 function srcset(image) {
   return {
@@ -40,6 +42,7 @@ export default function ProductInfo() {
   const [product, setProduct] = React.useState(null);
   const [showGalery, setShowGalery] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [openShare, setOpenShare] = React.useState(false);
 
   const onClose = () => {
     // close the dialog, go back to the previous page in location
@@ -106,11 +109,8 @@ export default function ProductInfo() {
   };
 
   return !loading ? (
-    <Dialog
-      fullScreen
-      open={product != null}
-      onClose={onClose}
-    >
+    <Dialog fullScreen open={product != null} onClose={onClose}>
+      <Share open={openShare} productId={getProductId()} onClose={() => setOpenShare(false)} />
       <DialogCarousel
         open={showGalery}
         images={images}
@@ -170,6 +170,12 @@ export default function ProductInfo() {
             <FontAwesomeIcon icon={faCirclePlus} className="me-2" />
             <FontAwesomeIcon icon={faPhotoFilm} className="me-2" />
           </button>
+          <button
+            className="btn btn-outline-primary ms-3"
+            onClick={() => setOpenShare(true)}
+          >
+            <FontAwesomeIcon icon={faShare} className="me-2" />
+          </button>
         </div>
       </div>
       <hr></hr>
@@ -200,5 +206,7 @@ export default function ProductInfo() {
         <hr></hr>
       </div>
     </Dialog>
-  ) : (<ProductInfoLoader />);
+  ) : (
+    <ProductInfoLoader />
+  );
 }
