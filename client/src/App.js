@@ -140,7 +140,7 @@ function App() {
   useEffect(() => {
     // create websocket
     if (ws == null) {
-      const ws = new WebSocket("ws://localhost:8080/websocket-endpoint");
+      const ws = new WebSocket("ws://localhost:8080/api/ws");
 
       ws.onmessage = (message) => {
         const eventMessage = JSON.parse(message.data);
