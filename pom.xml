@@ -73,9 +73,6 @@
         <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-                <finalName>bookify</finalName> <!-- Nombre del archivo JAR -->
-            </configuration>
         </plugin>
     </plugins>
 </build>
