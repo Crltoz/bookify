@@ -229,7 +229,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             disablePortal
             options={categories.map((category) => category.name)}
             value={
-              categories.find((it) => it.id == product?.categoryId)?.name || ""
+              categories.find((category) => category.products.indexOf(product?.id) != -1)?.name || ""
             }
             onChange={(event, value) => setCategoryName(value || "")}
             isOptionEqualToValue={(option, value) => option.name === value.name}

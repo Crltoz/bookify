@@ -19,6 +19,26 @@ const Search = ({ categories }) => {
   const selectedItemRef = useRef(selectedItem);
   const [checked, setChecked] = React.useState([0]);
 
+  useEffect(() => {
+    getProducts();
+
+    subscribe("updateProduct", updateProductEvent);
+    subscribe("deleteProduct", deleteProductEvent);
+    subscribe("createProduct", updateProductEvent);
+
+    return () => {
+      unsubscribe("updateProduct");
+    };
+  }, []);
+
+  useEffect(() => {
+    productRef.current = products;
+  }, [products]);
+
+  useEffect(() => {
+    selectedItemRef.current = selectedItem;
+  }, [selectedItem]);
+
   const handleToggle = (value) => () => {
     const currentIndex = checked.indexOf(value);
     const newChecked = [...checked];
@@ -40,25 +60,6 @@ const Search = ({ categories }) => {
       console.error(e);
     }
   };
-
-  useEffect(() => {
-    getProducts();
-
-    subscribe("updateProduct", updateProductEvent);
-    subscribe("deleteProduct", deleteProductEvent);
-
-    return () => {
-      unsubscribe("updateProduct");
-    };
-  }, []);
-
-  useEffect(() => {
-    productRef.current = products;
-  }, [products]);
-
-  useEffect(() => {
-    selectedItemRef.current = selectedItem;
-  }, [selectedItem]);
 
   const deleteProductEvent = ({ detail }) => {
     const productId = detail;
@@ -88,8 +89,10 @@ const Search = ({ categories }) => {
       newProducts[index] = product;
       setProducts(newProducts);
 
-      if (selectedItemRef.current) { 
-        const selectedItemUpdated = newProducts.find((product) => product.id === selectedItemRef.current.id);
+      if (selectedItemRef.current) {
+        const selectedItemUpdated = newProducts.find(
+          (product) => product.id === selectedItemRef.current.id
+        );
         setSelectedItem(selectedItemUpdated);
       }
     } catch (e) {
@@ -155,7 +158,7 @@ const Search = ({ categories }) => {
                   .includes(search.toLowerCase())) &&
               (checked.length == 0 ||
                 checked.find(
-                  (index) => categories[index].id == product.categoryId
+                  (index) => categories[index]?.products?.indexOf(product.id) != -1
                 ) != null);
             return (
               filters && (
