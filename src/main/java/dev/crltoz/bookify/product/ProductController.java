@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -40,6 +41,18 @@ public class ProductController {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
+    }
+
+    @GetMapping("/productCard")
+    public String getProductCard(@RequestParam String id, Model model) {
+        // product
+        Optional<Product> product = productService.getProductById(new ObjectId(id));
+        if (product.isEmpty()) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("product", product.get());
+        return "productCard";
     }
 
     @GetMapping("/home")

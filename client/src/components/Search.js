@@ -9,10 +9,12 @@ import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import "./css/Search.css";
 import { subscribe, unsubscribe } from "../events";
+import HomeLoader from "./HomeLoader";
 
 const Search = ({ categories }) => {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const productRef = useRef(products);
   const [checked, setChecked] = React.useState([0]);
 
@@ -51,6 +53,9 @@ const Search = ({ categories }) => {
     try {
       const response = await axios.get("/products/search");
       setProducts(response.data);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     } catch (e) {
       console.error(e);
     }
@@ -145,14 +150,14 @@ const Search = ({ categories }) => {
                   (index) =>
                     categories[index]?.products?.indexOf(product.id) != -1
                 ) != null);
-            return (
-              filters && (
-                <ProductEntry
-                  product={product}
-                  onSelectItem={(product) => onSelectItem(product)}
-                  key={product.id}
-                />
-              )
+            return filters && !loading ? (
+              <ProductEntry
+                product={product}
+                onSelectItem={(product) => onSelectItem(product)}
+                key={product.id}
+              />
+            ) : (
+              <HomeLoader key={product.id} />
             );
           })}
         </div>
