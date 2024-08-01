@@ -90,15 +90,11 @@ public class ProductController {
             }
         }
 
-        String categoryId = "";
         Category category = null;
 
         // check if category exists
         if (ObjectId.isValid(productRequest.getCategoryId())) {
             category = categoryService.getCategoryById(new ObjectId(productRequest.getCategoryId())).orElse(null);
-            if (category != null) {
-                categoryId = productRequest.getCategoryId();
-            }
         }
 
 
@@ -107,8 +103,9 @@ public class ProductController {
                 productRequest.getName(),
                 productRequest.getDescription(),
                 productRequest.getImages(),
-                categoryId,
-                productRequest.getFeatures()
+                productRequest.getFeatures(),
+                productRequest.getAddress(),
+                productRequest.getMapUrl()
         );
 
         productService.save(product);
@@ -136,9 +133,12 @@ public class ProductController {
             return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
         }
 
+        // get category
+        Category category = categoryService.getCategoryByProductId(id);
+
         // remove product from category
-        if (ObjectId.isValid(product.getCategoryId())) {
-            categoryService.removeProductFromCategory(new ObjectId(product.getCategoryId()), id);
+        if (category != null) {
+            categoryService.removeProductFromCategory(category, id);
         }
 
         productService.deleteProduct(id);
@@ -167,13 +167,16 @@ public class ProductController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
 
-        String categoryId = productRequest.getCategoryId();
+        Category category = categoryService.getCategoryByProduct(product);
 
         // check if category id change
-        if (!Objects.equals(productRequest.getCategoryId(), product.getCategoryId())) {
+        if ((category != null && productRequest.getCategoryId().isBlank()) ||
+            (category == null && !productRequest.getCategoryId().isBlank()) ||
+                (category != null && !Objects.equals(category.getId(), productRequest.getCategoryId()))) {
+
             // remove product from old category
-            if (ObjectId.isValid(product.getCategoryId())) {
-                categoryService.removeProductFromCategory(new ObjectId(product.getCategoryId()), id);
+            if (category != null) {
+                categoryService.removeProductFromCategory(category, id);
             }
 
             // check if new category exists and set
@@ -181,9 +184,6 @@ public class ProductController {
                 if (categoryService.getCategoryById(new ObjectId(productRequest.getCategoryId())).isPresent()) {
                     // add product to new category
                     categoryService.addProductToCategory(new ObjectId(productRequest.getCategoryId()), id);
-                } else {
-                    // set category id to empty if category not found
-                    categoryId = "";
                 }
             }
         }
@@ -193,8 +193,9 @@ public class ProductController {
                 productRequest.getName(),
                 productRequest.getDescription(),
                 productRequest.getImages(),
-                categoryId,
-                productRequest.getFeatures()
+                productRequest.getFeatures(),
+                product.getAddress(),
+                product.getMapUrl()
         );
         updatedProduct.setId(id.toString());
 

@@ -289,7 +289,7 @@ function App() {
             <Route path="/confirm" element={<Layout user={user} />}>
               <Route index element={<ConfirmUser />} />
             </Route>
-            <Route path="/product/:id" element={<Layout user={user} />}>
+            <Route path="/product" element={<Layout user={user} />}>
               <Route index element={<ProductInfo />} />
             </Route>
           </Routes>
