@@ -140,7 +140,8 @@ function App() {
   useEffect(() => {
     // create websocket
     if (ws == null) {
-      const ws = new WebSocket("ws://localhost:8080/api/ws");
+      //const ws = new WebSocket("ws://localhost:8080/api/ws");
+      const ws = new WebSocket("ws://bookify.website/api/ws");
 
       ws.onmessage = (message) => {
         const eventMessage = JSON.parse(message.data);
