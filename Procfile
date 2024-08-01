@@ -1,1 +1,1 @@
-web: cd client && npm install && npm run build && cd .. && cp -r client/build/* src/main/resources/static/ && java -jar target/bookify-0.0.1-SNAPSHOT.jar
+web: java -jar target/bookify-0.0.1-SNAPSHOT.jar
