@@ -69,14 +69,14 @@ const Register = () => {
           case 201: {
             setWaitingAfterRegister(true);
             setDialogText(
-              "Cuenta creada correctamente, ¡gracias por pertenecer a Bookify! Presiona ACEPTAR para continuar."
+              "Cuenta creada correctamente, ¡gracias por pertenecer a Bookify! Revisa tu casilla de correo y confirmala para iniciar a usar tu nueva cuenta."
+            );            
+            break;
+          }
+          case 202: {
+            setDialogText(
+              "Este email ya existe pero no está confirmado, ingresa a tu casilla y activa tu cuenta para iniciar a usarla. Se ha reenviado el correo."
             );
-
-            // set the token in the local storage and in axios headers
-            window.localStorage.setItem("token", response.data);
-            axios.defaults.headers.common[
-              "Authorization"
-            ] = `Bearer ${response.data}`;
             break;
           }
           case 400: {

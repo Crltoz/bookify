@@ -3,9 +3,12 @@ import axios from "axios";
 import DeleteProduct from "./DeleteProduct";
 import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
+import { useRef } from "react";
+import { subscribe, unsubscribe } from "../events";
 
 const AdminListProducts = () => {
   const [products, setProducts] = useState([]);
+  const productRef = useRef(products);
   const [deleteProduct, setDeleteProduct] = useState(null);
   const [editProduct, setEditProduct] = useState(null);
   const [dialogText, setDialogText] = useState("");
@@ -21,7 +24,46 @@ const AdminListProducts = () => {
 
   useEffect(() => {
     fetchProducts();
+
+    subscribe("updateProduct", updateProductEvent);
+    subscribe("deleteProduct", deleteProductEvent);
+
+    return () => {
+      unsubscribe("updateProduct");
+    };
   }, []);
+
+  useEffect(() => {
+    productRef.current = products;
+  }, [products]);
+
+  const deleteProductEvent = ({ detail }) => {
+    const productId = detail;
+    const newProducts = productRef.current.filter((it) => it.id != productId);
+    setProducts(newProducts);
+  };
+
+  const updateProductEvent = async ({ detail }) => {
+    try {
+      const productId = detail;
+      const response = await axios.get(`/products/get/${productId}`);
+      const product = response.data;
+      if (!product) return;
+
+      const newProducts = [...productRef.current];
+      const index = newProducts.findIndex((it) => it.id == productId);
+      if (index == -1) {
+        newProducts.push(product);
+        setProducts(newProducts);
+        return;
+      }
+
+      newProducts[index] = product;
+      setProducts(newProducts);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleEdit = (product) => {
     setEditProduct(product);
@@ -38,7 +80,6 @@ const AdminListProducts = () => {
       switch (deleted.status) {
         case 200: {
           setDialogText("Producto eliminado correctamente");
-          fetchProducts();
           break;
         }
         case 404: {
@@ -71,7 +112,6 @@ const AdminListProducts = () => {
       switch (edited.status) {
         case 200: {
           setDialogText("Producto editado correctamente");
-          fetchProducts();
           break;
         }
         case 404: {
@@ -107,7 +147,9 @@ const AdminListProducts = () => {
         onCancel={cancelEdit}
       />
       <DialogText text={dialogText} onClose={onCloseDialogText} />
-      <div className="d-flex flex-column w-100">
+      <hr></hr>
+      <div className="d-flex flex-column w-100 mt-5">
+        <h1>Productos</h1>
         <div className="row w-100">
           {products.map((product, index) => (
             <div key={index} className="col-12 mb-3">

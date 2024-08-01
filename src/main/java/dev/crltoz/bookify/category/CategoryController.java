@@ -2,6 +2,7 @@ package dev.crltoz.bookify.category;
 
 import dev.crltoz.bookify.user.UserService;
 import dev.crltoz.bookify.util.JwtUtil;
+import dev.crltoz.bookify.websocket.WebSocketService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,24 +22,60 @@ public class CategoryController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
     @GetMapping
     public ResponseEntity<List<Category>> allCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
+    @GetMapping("/get/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable ObjectId id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id).orElse(null));
+    }
+
     @PostMapping("/add")
-    public ResponseEntity<Optional<Category>> addCategory(@RequestBody CreateCategoryRequest category, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<String> addCategory(@RequestBody CreateCategoryRequest category, @RequestHeader("Authorization") String token) {
         if (!userService.isAdmin(token)) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
         }
 
         // check if exists category with same name
         if (categoryService.getAllCategories().stream().anyMatch(c -> c.getName().equalsIgnoreCase(category.getName()))) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            return new ResponseEntity<>("null", HttpStatus.CONFLICT);
         }
 
-        Category newCategory = new Category(category.getName(), category.getDescription(), category.getImage());
-        return new ResponseEntity<>(Optional.ofNullable(categoryService.save(newCategory)), HttpStatus.CREATED);
+        Category newCategory = categoryService.save(new Category(category.getName(), category.getDescription(), category.getImage()));
+
+        // send new category
+        webSocketService.sendMessage("createCategory", List.of(newCategory.getId()));
+        return new ResponseEntity<>(newCategory.getId(), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<Category> updateCategory(@RequestBody Category category, @RequestHeader("Authorization") String token) {
+        if (!userService.isAdmin(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!ObjectId.isValid(category.getId())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Category categoryToUpdate = categoryService.getCategoryById(new ObjectId(category.getId())).orElse(null);
+        if (categoryToUpdate == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        categoryToUpdate.setName(category.getName());
+        categoryToUpdate.setDescription(category.getDescription());
+        categoryToUpdate.setImage(category.getImage());
+        categoryService.save(categoryToUpdate);
+
+        // send updated category
+        webSocketService.sendMessage("updateCategory", List.of(categoryToUpdate.getId()));
+        return new ResponseEntity<>(categoryService.save(categoryToUpdate), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -49,9 +86,12 @@ public class CategoryController {
 
         Category category = categoryService.getCategoryById(id).orElse(null);
         if (category == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         categoryService.deleteCategory(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        // send deleted category
+        webSocketService.sendMessage("deleteCategory", List.of(id.toString()));
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

@@ -1,5 +1,6 @@
 package dev.crltoz.bookify.user;
 
+import dev.crltoz.bookify.email.EmailService;
 import dev.crltoz.bookify.util.JwtUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,12 @@ public class UserController {
 
     @Autowired
     private WebSocketService webSocketService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${env.URL}")
+    private String URL;
 
     // Security for login and register
     private final ConcurrentHashMap<String, Pair<Integer, Long>> requestCounts = new ConcurrentHashMap<>();
@@ -93,7 +101,11 @@ public class UserController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<Optional<User>> getUserById(@PathVariable ObjectId id) {
+    public ResponseEntity<Optional<User>> getUserById(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
+        if (!userService.isAdmin(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
         // return 404 if user not found
         Optional<User> user = userService.getUserById(id);
         if (user.isEmpty()) {
@@ -121,6 +133,12 @@ public class UserController {
         List<User> users = userService.getAllUsers();
         for (User u : users) {
             if (u.getEmail().equalsIgnoreCase(createUserRequest.getEmail())) {
+                if (!u.isConfirmed()) {
+                    // send email again
+                    sendEmail(u);
+                    return new ResponseEntity<>("null", HttpStatus.ACCEPTED);
+                }
+
                 return new ResponseEntity<>("null", HttpStatus.CONFLICT);
             }
         }
@@ -133,17 +151,29 @@ public class UserController {
                     hashedPassword,
                     false,
                     createUserRequest.getFirstName(),
-                    createUserRequest.getLastName()
+                    createUserRequest.getLastName(),
+                    false
             );
 
             userService.save(user);
-            // send token after registration
-            String token = jwtUtil.generateToken(user);
-            return new ResponseEntity<>(token, HttpStatus.CREATED);
+
+            // send confirmation email
+            sendEmail(user);
+            return new ResponseEntity<>("null", HttpStatus.CREATED);
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("NoSuchAlgorithmException was thrown in createUser", e);
             return new ResponseEntity<>("null", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private void sendEmail(User user) {
+        String confirmToken = jwtUtil.generateConfirmUserToken(user.getEmail());
+        String confirmLink =  URL + "/confirm?token=" + confirmToken;
+        // replace every ${confirmLink} with confirmLink
+        String emailTemplate = emailService.getTemplate("welcome");
+        emailTemplate = emailTemplate.replace("${name}", user.getFirstName());
+        emailTemplate = emailTemplate.replace("${confirmationLink}", confirmLink);
+        emailService.sendEmail(user.getEmail(), "Bienvenido a Bookify: Confirmar email", emailTemplate);
     }
 
     @PostMapping("/login")
@@ -163,6 +193,11 @@ public class UserController {
             if (u.getEmail().equalsIgnoreCase(loginUserRequest.getEmail())) {
                 try {
                     if (Password.verifyPassword(loginUserRequest.getPassword(), u.getPassword())) {
+                        // check if email is confirmed
+                        if (!u.isConfirmed()) {
+                            return new ResponseEntity<>("null", HttpStatus.FORBIDDEN);
+                        }
+
                         // create jwt and send
                         String token = jwtUtil.generateToken(u);
                         return new ResponseEntity<>(token, HttpStatus.OK);
@@ -173,6 +208,26 @@ public class UserController {
                     LOGGER.error("NoSuchAlgorithmException was thrown in login", e);
                     return new ResponseEntity<>("null", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
+            }
+        }
+        return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/confirm/{token}")
+    public ResponseEntity<String> confirmEmail(@PathVariable String token) {
+        if (!jwtUtil.verifyConfirmUserToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String email = jwtUtil.getEmailFromConfirmUserToken(token);
+        List<User> users = userService.getAllUsers();
+        for (User u : users) {
+            if (u.getEmail().equalsIgnoreCase(email)) {
+                if (!u.isConfirmed()) {
+                    u.setConfirmed(true);
+                    userService.save(u);
+                }
+                return new ResponseEntity<>("null", HttpStatus.OK);
             }
         }
         return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
@@ -237,6 +292,11 @@ public class UserController {
                         // update password
                         u.setPassword(Password.hashPassword(updatePasswordRequest.getNewPassword()));
                         userService.save(u);
+
+                        // send email to user using html template
+                        String emailTemplate = emailService.getTemplate("password");
+                        emailTemplate = emailTemplate.replace("${name}", u.getFirstName());
+                        emailService.sendEmail(u.getEmail(), "Bookify: Contraseña actualizada", emailTemplate);
                         return new ResponseEntity<>("null", HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);

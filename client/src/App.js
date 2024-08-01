@@ -13,11 +13,14 @@ import Profile from "./components/Profile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import logo from "./assets/img/bookify-logo-big.webp";
+import Search from "./components/Search";
+import ConfirmUser from "./components/ConfirmUser";
+import { publish } from "./events";
 
 axios.defaults.baseURL = "http://localhost:8080/api";
 
 axios.defaults.validateStatus = (status) => {
-  return status >= 200 && status < 500;
+  return status >= 200 && status <= 500;
 };
 
 function getToken() {
@@ -33,6 +36,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [ws, setWs] = useState(null);
+  const [categories, setCategories] = useState([]);
   const userRef = useRef(user);
   const productRef = useRef(products);
 
@@ -40,6 +44,15 @@ function App() {
     try {
       const response = await axios.get("/products/home");
       setProducts(response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const getCategories = async () => {
+    try {
+      const response = await axios.get("/categories");
+      setCategories(response.data);
     } catch (e) {
       console.error(e);
     }
@@ -116,6 +129,7 @@ function App() {
 
   useEffect(() => {
     getProducts();
+    getCategories();
     validateToken();
   }, []);
 
@@ -155,11 +169,26 @@ function App() {
         }
         break;
       case "updateProduct": {
-        // get specific product updated
         const productId = args[0];
-        if (productRef.current.find((it) => it.id == productId)) {
-          updateProductFromList(productId);
-        }
+        updateProductEvent(productId);
+        publish("updateProduct", productId);
+        break;
+      }
+      case "deleteProduct": {
+        deleteProductEvent(args[0]);
+        publish("deleteProduct", args[0]);
+        break;
+      }
+      case "createCategory": {
+        publish("createCategory", args[0]);
+        break;
+      }
+      case "updateCategory": {
+        publish("updateCategory", args[0]);
+        break;
+      }
+      case "deleteCategory": {
+        publish("deleteCategory", args[0]);
         break;
       }
       default:
@@ -167,23 +196,28 @@ function App() {
     }
   };
 
-  const updateProductFromList = async (productId) => {
+  const updateProductEvent = async (productId) => {
     try {
       const response = await axios.get(`/products/get/${productId}`);
       const product = response.data;
       const newProducts = [...productRef.current];
       const index = newProducts.findIndex((it) => it.id == productId);
-
-      if (!product) {
-        newProducts.splice(index, 1);
-      } else {
-        newProducts[index] = product;
+      if (index == -1) {
+        newProducts.push(product);
+        setProducts(newProducts);
+        return;
       }
 
+      newProducts[index] = product;
       setProducts(newProducts);
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const deleteProductEvent = (productId) => {
+    const newProducts = productRef.current.filter((it) => it.id != productId);
+    setProducts(newProducts);
   };
 
   return (
@@ -208,6 +242,12 @@ function App() {
                 index
                 element={<Profile user={user} onUpdate={validateToken} />}
               />
+            </Route>
+            <Route path="/search" element={<Layout user={user} />}>
+              <Route index element={<Search categories={categories} />} />
+            </Route>
+            <Route path="/confirm" element={<Layout user={user} />}>
+              <Route index element={<ConfirmUser />} />
             </Route>
           </Routes>
         ) : (

@@ -67,6 +67,10 @@ const Login = ({ isLogged }) => {
             setDialogText("Email o contraseña incorrectos.");
             break;
           }
+          case 403: {
+            setDialogText("Ingresa a tu casilla de email y confirma tu cuenta para activarla e iniciar a usarla.");
+            break;
+          }
           case 404: {
             setDialogText("Email o contraseña incorrectos.");
             break;

@@ -25,11 +25,14 @@ public class User {
 
     private boolean isAdmin;
 
-    public User(String email, byte[] password, boolean isAdmin, String firstName, String lastName) {
+    private boolean isConfirmed;
+
+    public User(String email, byte[] password, boolean isAdmin, String firstName, String lastName, boolean isConfirmed) {
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.isConfirmed = isConfirmed;
     }
 }

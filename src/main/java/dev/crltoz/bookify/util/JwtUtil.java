@@ -15,10 +15,25 @@ public class JwtUtil {
 
     private final Algorithm algorithm;
     private final JWTVerifier verifier;
+    private final Algorithm secondaryAlgorithm;
+    private final JWTVerifier secondaryVerifier;
 
-    public JwtUtil(@Value("${JWT_SECRET_KEY}") String secretKey) {
+    /**
+     * Constructor for JwtUtil.
+     * The reason to use the secondary secret key is because
+     * we want to be able to generate tokens for users who need to
+     * confirm their email address. We don't want to use the same secret key
+     * because the jwt token generated for email confirmation not expires.
+     * In any case, if someone with a quantum computer can break the secret key of the emails
+     * they will not be able to generate tokens for users who are already logged in.
+     * @param secretKey
+     * @param secondarySecretKey
+     */
+    public JwtUtil(@Value("${JWT_SECRET_KEY}") String secretKey, @Value("${env.JWT_SECONDARY_SECRET_KEY}") String secondarySecretKey) {
         this.algorithm = Algorithm.HMAC256(secretKey);
         this.verifier = JWT.require(algorithm).build();
+        this.secondaryAlgorithm = Algorithm.HMAC256(secondarySecretKey);
+        this.secondaryVerifier = JWT.require(secondaryAlgorithm).build();
     }
 
     public String generateToken(User user) {
@@ -31,6 +46,31 @@ public class JwtUtil {
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 hours
                 .sign(algorithm);
+    }
+
+    public String generateConfirmUserToken(String email) {
+        return JWT.create()
+                .withSubject(email)
+                .withIssuedAt(new Date())
+                .sign(secondaryAlgorithm);
+    }
+
+    public boolean verifyConfirmUserToken(String token) {
+        try {
+            secondaryVerifier.verify(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String getEmailFromConfirmUserToken(String token) {
+        try {
+            DecodedJWT claims = secondaryVerifier.verify(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getStringFromToken(String token) {

@@ -12,12 +12,14 @@ import { Autocomplete } from "@mui/material";
 import ProductFeature from "./ProductFeature";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { subscribe, unsubscribe } from "../events";
 
 export default function EditProduct({ open, onConfirm, onCancel, product }) {
   const [images, setImages] = React.useState([]);
   const [features, setFeatures] = React.useState([]);
   const [dialogText, setDialogText] = React.useState("");
   const [categories, setCategories] = React.useState([]);
+  let categoriesRef = React.useRef(categories);
   const [categoryName, setCategoryName] = React.useState("");
 
   // fetch categories
@@ -31,7 +33,60 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
         setDialogText("Error al cargar las categorías.");
         console.error(error);
       });
+
+    subscribe("updateCategory", updateOrCreateCategory);
+    subscribe("createCategory", updateOrCreateCategory);
+    subscribe("deleteCategory", deleteCategory);
+
+    return () => {
+      unsubscribe("updateCategory");
+      unsubscribe("createCategory");
+      unsubscribe("deleteCategory");
+    };
   }, []);
+
+  React.useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+
+  const deleteCategory = async ({ detail }) => {
+    const categoryId = detail;
+
+    // find category and remove from list
+    const newCategories = [...categoriesRef.current];
+    const index = newCategories.findIndex((it) => it.id == categoryId);
+    if (index === -1) return;
+
+    newCategories.splice(index, 1);
+    setCategories(newCategories);
+  };
+
+  const updateOrCreateCategory = async ({ detail }) => {
+    const categoryId = detail;
+    axios
+      .get(`/categories/get/${categoryId}`)
+      .then((response) => {
+        if (response.status != 200) return;
+
+        const category = response.data;
+        if (!category) return;
+
+        const newCategories = [...categoriesRef.current];
+        const index = newCategories.findIndex((it) => it.id == categoryId);
+
+        if (index === -1) {
+          newCategories.push(category);
+          setCategories([...newCategories]);
+        } else {
+          newCategories[index] = category;
+          setCategories([...newCategories]);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        setDialogText("Error al actualizar la categoría.");
+      });
+  };
 
   const addImage = () => {
     if (product && product.images) {
@@ -124,6 +179,8 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
               newProduct.features.push(feature);
             }
 
+            setFeatures([]);
+
             // get category by name and set id
             const category = categories.find(
               (it) => it.name == newProduct.categoryName
@@ -163,6 +220,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             type="text"
             fullWidth
             multiline
+            maxRows={4}
             variant="outlined"
             inputProps={{ defaultValue: product?.description || "" }}
           />

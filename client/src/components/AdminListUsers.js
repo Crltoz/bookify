@@ -80,10 +80,23 @@ const AdminListUsers = ({ selfUser }) => {
                   <p className="card-text">
                     ID: <b>{user.id}</b>
                   </p>
-                  <h5>
+                  <h5 className="text-white">
                     {user.firstName} {user.lastName}
                   </h5>
-                  <p className="card-text">Email: {user.email}</p>
+                  <p className="card-text">
+                    Email: {user.email} | Verificado:{" "}
+                    {user.isConfirmed ? (
+                      <FontAwesomeIcon
+                        icon={faCircleCheck}
+                        className="text-success"
+                      />
+                    ) : (
+                      <FontAwesomeIcon
+                        icon={faCircleXmark}
+                        className="text-danger"
+                      />
+                    )}
+                  </p>
                   <p className="card-text">
                     Administrador:{" "}
                     {user.isAdmin ? (

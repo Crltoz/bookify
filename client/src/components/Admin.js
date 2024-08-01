@@ -7,10 +7,13 @@ import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
 import EditCategory from "./EditCategory";
 import AdminListUsers from "./AdminListUsers";
+import AdminListCategories from "./AdminListCategories";
+import { subscribe, unsubscribe } from "../events";
 
 const Admin = ({ user }) => {
   const [showProducts, setShowProducts] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const [createProduct, setCreateProduct] = useState(false);
   const [dialogText, setDialogText] = useState("");
   const [createCategory, setCreateCategory] = useState(false);
@@ -24,13 +27,28 @@ const Admin = ({ user }) => {
   const handleListProducts = () => {
     setShowProducts(!showProducts);
 
-    if (!showProducts) setShowUsers(false);
+    if (!showProducts) {
+      setShowUsers(false);
+      setShowCategories(false);
+    }
   };
 
   const handleListUsers = () => {
     setShowUsers(!showUsers);
 
-    if (!showUsers) setShowProducts(false);
+    if (!showUsers) {
+      setShowProducts(false);
+      setShowCategories(false);
+    }
+  };
+
+  const handleListCategories = () => {
+    setShowCategories(!showCategories);
+
+    if (!showCategories) {
+      setShowProducts(false);
+      setShowUsers(false);
+    }
   };
 
   const onCloseDialogText = () => {
@@ -47,16 +65,11 @@ const Admin = ({ user }) => {
 
   const confirmCreateProduct = async (product) => {
     try {
-      const updateListProduct = showProducts;
-      if (updateListProduct) setShowProducts(false);
       const response = await axios.post("/products/add", product);
       switch (response.status) {
         case 201: {
           setCreateProduct(false);
           setDialogText("Producto creado correctamente");
-          if (updateListProduct) {
-            setShowProducts(true);
-          }
           break;
         }
         case 409: {
@@ -126,12 +139,21 @@ const Admin = ({ user }) => {
         <div className="d-flex flex-column">
           <div className="row">
             <div className="col-12 col-lg-6">
-              <button
-                className="btn btn-primary m-4"
-                onClick={handleListProducts}
-              >
-                {showProducts ? "Ocultar productos" : "Listar productos"}
-              </button>
+              {showProducts ? (
+                <button
+                  className="btn btn-outline-primary m-4"
+                  onClick={handleListProducts}
+                >
+                  Ocultar productos
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary m-4"
+                  onClick={handleListProducts}
+                >
+                  Listar productos
+                </button>
+              )}
             </div>
             <div className="col d-flex justify-content-center align-items-center">
               <span>
@@ -153,6 +175,7 @@ const Admin = ({ user }) => {
               <span>Crea un nuevo producto y publicalo en la web.</span>
             </div>
           </div>
+          <hr></hr>
           <div className="row">
             <div className="col-12 col-lg-6">
               <button
@@ -170,9 +193,46 @@ const Admin = ({ user }) => {
           </div>
           <div className="row">
             <div className="col-12 col-lg-6">
-              <button className="btn btn-primary m-4" onClick={handleListUsers}>
-                {showUsers ? "Ocultar usuarios" : "Listar usuarios"}
-              </button>
+              {showCategories ? (
+                <button
+                  className="btn btn-outline-primary m-4"
+                  onClick={handleListCategories}
+                >
+                  Ocultar categorías
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary m-4"
+                  onClick={handleListCategories}
+                >
+                  Listar categorías
+                </button>
+              )}
+            </div>
+            <div className="col d-flex justify-content-center align-items-center">
+              <span>
+                Muestra todas las categorías disponibles y opciones para editar.
+              </span>
+            </div>
+          </div>
+          <hr></hr>
+          <div className="row">
+            <div className="col-12 col-lg-6">
+              {showUsers ? (
+                <button
+                  className="btn btn-outline-primary m-4"
+                  onClick={handleListUsers}
+                >
+                  Ocultar usuarios
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary m-4"
+                  onClick={handleListUsers}
+                >
+                  Listar usuarios
+                </button>
+              )}
             </div>
             <div className="col d-flex justify-content-center align-items-center">
               <span>
@@ -185,6 +245,7 @@ const Admin = ({ user }) => {
 
         {showProducts && <AdminListProducts />}
         {showUsers && <AdminListUsers selfUser={user} />}
+        {showCategories && <AdminListCategories />}
         <EditProduct
           open={createProduct}
           product={{}}

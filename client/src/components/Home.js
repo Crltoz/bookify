@@ -10,6 +10,7 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import ProductInfo from "./ProductInfo";
+import ProductEntry from "./ProductEntry";
 
 const Home = ({ products }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -26,6 +27,10 @@ const Home = ({ products }) => {
 
   const onSelectItem = (product) => {
     setSelectedItem(product);
+  };
+
+  const goToSearch = () => {
+    window.location.href = "/search";
   };
 
   useEffect(() => {
@@ -53,7 +58,7 @@ const Home = ({ products }) => {
               placeholder="Check in - Check out"
             />
           </div>
-          <button className="btn btn-primary search text-white">
+          <button className="btn btn-primary search-button text-white" onClick={goToSearch}>
             <FontAwesomeIcon icon={faSearch} /> Buscar
           </button>
         </div>
@@ -64,50 +69,11 @@ const Home = ({ products }) => {
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
           {limitedProducts.map((product) => (
-            <div className="col-12 col-md-6 mb-4" key={product.name}>
-              <div className="card d-lg-flex flex-row d-none">
-                <img
-                  src={product.images[0] || "https://via.placeholder.com/300"}
-                  className="card-img-left user-select-none rounded image-effect"
-                  alt={product.name}
-                  onClick={() => onSelectItem(product)}
-                />
-                <div className="card-body d-flex flex-column justify-content-between align-items-center">
-                  <h5 className="card-title" onClick={() => onSelectItem(product)}>
-                    {product.name}
-                  </h5>
-                  <p className="card-text">{product.description}</p>
-                  <button
-                    href={product.link}
-                    className="btn btn-outline-success"
-                  >
-                    <FontAwesomeIcon icon={faLocationPin} className="me-2" />
-                    Ubicación
-                  </button>
-                </div>
-              </div>
-
-              <div className="card d-lg-none">
-                <img
-                  src={product.images[0] || "https://via.placeholder.com/300"}
-                  className="card-img-top user-select-none rounded image-effect"
-                  alt={product.name}
-                  onClick={() => onSelectItem(product)}
-                />
-                <div className="card-body">
-                  <h5 className="card-title" onClick={() => onSelectItem(product)}>
-                    {product.name}
-                  </h5>
-                  <p className="card-text">{product.description}</p>
-                  <button
-                    href={product.link}
-                    className="btn btn-outline-success"
-                  >
-                    <FontAwesomeIcon icon={faLocationPin} className="me-2" />
-                    Ubicación
-                  </button>
-                </div>
-              </div>
+            <div className="col-12 col-md-6 mb-4" key={product.id}>
+              <ProductEntry
+                product={product}
+                onSelectItem={onSelectItem}
+              />
             </div>
           ))}
         </div>

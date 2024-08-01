@@ -1,0 +1,15 @@
+.search {
+    margin-top: 10vw;
+}
+
+@media (max-width: 1000px) {
+    .search {
+        margin-top: 30vw;
+    }
+}
+
+@media (max-width: 500px) {
+    .search {
+        margin-top: 50vw;
+    }
+}

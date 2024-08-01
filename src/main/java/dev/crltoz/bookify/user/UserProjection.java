@@ -11,4 +11,6 @@ public interface UserProjection {
     String getEmail();
 
     boolean getIsAdmin();
+
+    boolean getIsConfirmed();
 }

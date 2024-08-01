@@ -3,7 +3,6 @@ package dev.crltoz.bookify.product;
 import dev.crltoz.bookify.category.Category;
 import dev.crltoz.bookify.category.CategoryService;
 import dev.crltoz.bookify.user.UserService;
-import dev.crltoz.bookify.util.JwtUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.http.WebSocket;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +48,18 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         // shuffle products
         Collections.shuffle(products);
+        // return first 100 products
+        int toIndex = Math.min(products.size(), 100);
+        return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts() {
+        // all products
+        List<Product> products = productService.getAllProducts();
+
+        // TODO: Implement search functionality
+
         // return first 100 products
         int toIndex = Math.min(products.size(), 100);
         return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
@@ -108,6 +118,8 @@ public class ProductController {
             categoryService.addProductToCategory(new ObjectId(category.getId()), new ObjectId(product.getId()));
         }
 
+        // send websocket message
+        webSocketService.sendMessage("updateProduct", List.of(product.getId()));
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
@@ -130,6 +142,9 @@ public class ProductController {
         }
 
         productService.deleteProduct(id);
+
+        // send websocket message
+        webSocketService.sendMessage("deleteProduct", List.of(id.toString()));
         return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
 
