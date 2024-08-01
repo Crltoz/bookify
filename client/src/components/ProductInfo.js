@@ -31,8 +31,9 @@ function srcset(image) {
   };
 }
 
+// the client here is in url http://url.com/product?id=123
 function getProductId() {
-  return window.location.pathname.split("/")[2];
+  return new URLSearchParams(window.location.search).get("id");
 }
 
 export default function ProductInfo() {
@@ -47,7 +48,6 @@ export default function ProductInfo() {
   };
 
   React.useEffect(() => {
-    // the client here is in url http://localhost:3000/product/:id
     const productId = getProductId();
 
     if (!productId) return;

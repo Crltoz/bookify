@@ -24,7 +24,7 @@ const Home = ({ products }) => {
   };
 
   const onSelectItem = (product) => {
-    window.location.href = `/product/${product.id}`;
+    window.location.href = `/product?id=${product.id}`;
   };
 
   useEffect(() => {

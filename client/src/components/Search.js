@@ -85,7 +85,7 @@ const Search = ({ categories }) => {
   };
 
   const onSelectItem = (product) => {
-    window.location.href = `/product/${product.id}`;
+    window.location.href = `/product?id=${product.id}`;
   };
 
   return (
