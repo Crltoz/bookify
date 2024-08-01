@@ -25,10 +25,6 @@ const Home = ({ products }) => {
     }
   }, [page, products]);
 
-  const onSelectItem = (product) => {
-    setSelectedItem(product);
-  };
-
   const goToSearch = () => {
     window.location.href = "/search";
   };
@@ -64,7 +60,7 @@ const Home = ({ products }) => {
         </div>
       </div>
 
-      <ProductInfo product={selectedItem} onClose={() => onSelectItem(null)} />
+      <ProductInfo product={selectedItem} onClose={() => setSelectedItem(null)} />
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
@@ -72,7 +68,7 @@ const Home = ({ products }) => {
             <div className="col-12 col-md-6 mb-4" key={product.id}>
               <ProductEntry
                 product={product}
-                onSelectItem={onSelectItem}
+                onSelectItem={(product) => setSelectedItem(product)}
               />
             </div>
           ))}

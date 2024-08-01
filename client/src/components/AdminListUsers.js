@@ -14,7 +14,20 @@ const AdminListUsers = ({ selfUser }) => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get("/users");
-      setUsers(response.data);
+      switch (response.status) {
+        case 200: {
+          setUsers(response.data);
+          break;
+        }
+        case 401: {
+          setDialogText("No tienes permisos para ver la lista de usuarios.");
+          return;
+        }
+        default: {
+          setDialogText("Error al obtener la lista de usuarios.");
+          return;
+        }
+      }
     } catch (error) {
       console.error(error);
     }
@@ -78,7 +91,7 @@ const AdminListUsers = ({ selfUser }) => {
               <div className="row bg-secondary text-white rounded p-4">
                 <div className="col">
                   <p className="card-text">
-                    ID: <b>{user.id}</b>
+                    User ID: <b>{user.id}</b>
                   </p>
                   <h5 className="text-white">
                     {user.firstName} {user.lastName}

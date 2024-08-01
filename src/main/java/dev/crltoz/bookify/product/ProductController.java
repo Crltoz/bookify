@@ -148,12 +148,18 @@ public class ProductController {
         return new ResponseEntity<>("Product deleted", HttpStatus.OK);
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<Product> editProduct(@PathVariable ObjectId id, @RequestBody CreateProductRequest productRequest, @RequestHeader("Authorization") String token) {
+    @PostMapping("/edit")
+    public ResponseEntity<Product> editProduct(@RequestBody UpdateProductRequest productRequest, @RequestHeader("Authorization") String token) {
         // check if is admin
         if (!userService.isAdmin(token)) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
+
+        if (!ObjectId.isValid(productRequest.getId())) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+
+        ObjectId id = new ObjectId(productRequest.getId());
 
         // return 404 if product not found
         Product product = productService.getProductById(id).orElse(null);

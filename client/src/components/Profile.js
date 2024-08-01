@@ -75,8 +75,12 @@ const Profile = ({ user, onUpdate }) => {
           setInvalidPassword("La contraseña debe tener al menos 8 caracteres.");
           return;
         }
-        case 401: {
+        case 418: {
           setInvalidOldPassword("La contraseña actual es incorrecta.");
+          return;
+        }
+        case 401: {
+          window.location.href = "/login";
           return;
         }
         case 404: {

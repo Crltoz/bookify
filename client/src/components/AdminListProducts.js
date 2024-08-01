@@ -82,6 +82,10 @@ const AdminListProducts = () => {
           setDialogText("Producto eliminado correctamente");
           break;
         }
+        case 401: {
+          setDialogText("No tienes permisos para eliminar el producto");
+          break;
+        }
         case 404: {
           setDialogText("Producto no encontrado");
           break;
@@ -108,10 +112,18 @@ const AdminListProducts = () => {
   const confirmEdit = async (product) => {
     try {
       setEditProduct(null);
-      const edited = await axios.post(`/products/edit/${product.id}`, product);
+      const edited = await axios.post(`/products/edit`, product);
       switch (edited.status) {
         case 200: {
           setDialogText("Producto editado correctamente");
+          break;
+        }
+        case 400: {
+          setDialogText("Datos del producto incorrectos");
+          break;
+        }
+        case 401: {
+          setDialogText("No tienes permisos para editar el producto");
           break;
         }
         case 404: {

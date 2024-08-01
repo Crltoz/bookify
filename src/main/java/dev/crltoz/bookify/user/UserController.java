@@ -299,7 +299,7 @@ public class UserController {
                         emailService.sendEmail(u.getEmail(), "Bookify: Contraseña actualizada", emailTemplate);
                         return new ResponseEntity<>("null", HttpStatus.OK);
                     } else {
-                        return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+                        return new ResponseEntity<>("null", HttpStatus.I_AM_A_TEAPOT);
                     }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error("NoSuchAlgorithmException was thrown in updatePassword", e);

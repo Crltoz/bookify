@@ -63,6 +63,10 @@ const Login = ({ isLogged }) => {
             window.location.href = "/";
             break;
           }
+          case 400: {
+            setDialogText("Email o contraseña incorrectos.");
+            break;
+          }
           case 401: {
             setDialogText("Email o contraseña incorrectos.");
             break;
@@ -75,7 +79,7 @@ const Login = ({ isLogged }) => {
             setDialogText("Email o contraseña incorrectos.");
             break;
           }
-          case 409: {
+          case 429: {
             setDialogText(
               "Demasiados intentos de inicio de sesión. Espera unos minutos antes de intentar de nuevo."
             );
