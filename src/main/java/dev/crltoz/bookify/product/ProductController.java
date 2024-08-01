@@ -43,18 +43,6 @@ public class ProductController {
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
     }
 
-    @GetMapping("/productCard")
-    public String getProductCard(@RequestParam String id, Model model) {
-        // product
-        Optional<Product> product = productService.getProductById(new ObjectId(id));
-        if (product.isEmpty()) {
-            return "redirect:/";
-        }
-
-        model.addAttribute("product", product.get());
-        return "productCard";
-    }
-
     @GetMapping("/home")
     public ResponseEntity<List<Product>> homeProducts() {
         // all products
