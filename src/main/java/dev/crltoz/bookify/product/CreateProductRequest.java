@@ -12,4 +12,6 @@ public class CreateProductRequest {
     private List<String> images;
     private String categoryId;
     private List<List<String>> features;
+    private Address address;
+    private String mapUrl;
 }

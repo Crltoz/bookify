@@ -23,15 +23,18 @@ public class Product {
 
     private List<String> images;
 
-    private String categoryId;
-
     private List<List<String>> features;
 
-    public Product(String name, String description, List<String> images, String categoryId, List<List<String>> features) {
+    private Address address;
+
+    private String mapUrl;
+
+    public Product(String name, String description, List<String> images, List<List<String>> features, Address address, String mapUrl) {
         this.name = name;
         this.description = description;
         this.images = images;
-        this.categoryId = categoryId;
         this.features = features;
+        this.address = address;
+        this.mapUrl = mapUrl;
     }
 }
