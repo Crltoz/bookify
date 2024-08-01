@@ -17,7 +17,7 @@ import Search from "./components/Search";
 import ConfirmUser from "./components/ConfirmUser";
 import { publish } from "./events";
 
-axios.defaults.baseURL = "https://bookify-website-77db531cd38b.herokuapp.com//api";
+axios.defaults.baseURL = "https://bookify-website-77db531cd38b.herokuapp.com/api";
 
 axios.defaults.validateStatus = (status) => {
   return status >= 200 && status <= 500;
