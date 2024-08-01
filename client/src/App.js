@@ -16,6 +16,7 @@ import logo from "./assets/img/bookify-logo-big.webp";
 import Search from "./components/Search";
 import ConfirmUser from "./components/ConfirmUser";
 import { publish } from "./events";
+import ProductInfo from "./components/ProductInfo";
 
 axios.defaults.baseURL = "https://bookify.website/api";
 
@@ -39,6 +40,75 @@ function App() {
   const [categories, setCategories] = useState([]);
   const userRef = useRef(user);
   const productRef = useRef(products);
+  const categoriesRef = useRef(categories);
+
+  useEffect(() => {
+    getProducts();
+    getCategories();
+    validateToken();
+  }, []);
+
+  useEffect(() => {
+    productRef.current = products;
+  }, [products]);
+
+  useEffect(() => {
+    categoriesRef.current = categories;
+  }, [categories]);
+
+  useEffect(() => {
+    // create websocket
+    if (ws == null) {
+      const ws = new WebSocket("ws://localhost:8080/api/ws");
+      //const ws = new WebSocket("ws://bookify.website/api/ws");
+
+      ws.onmessage = (message) => {
+        const eventMessage = JSON.parse(message.data);
+        // split eventName and arguments
+        const [...args] = eventMessage.data;
+        handleEventMessage(eventMessage.event, ...args);
+      };
+
+      setWs(ws);
+    }
+
+    // Clean up WebSocket connection when component unmounts or ws changes
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [loaded]);
+
+  const updateCategoryEvent = async (categoryId) => {
+    try {
+      const response = await axios.get(`/categories/get/${categoryId}`);
+      if (response.status != 200) {
+        return;
+      }
+      const category = response.data;
+
+      const newCategories = [...categoriesRef.current];
+      const index = newCategories.findIndex((it) => it.id == categoryId);
+      if (index == -1) {
+        newCategories.push(category);
+        setCategories([...newCategories]);
+        return;
+      }
+
+      newCategories[index] = category;
+      setCategories([...newCategories]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteCategoryEvent = (categoryId) => {
+    const newCategories = categoriesRef.current.filter(
+      (it) => it.id != categoryId
+    );
+    setCategories(newCategories);
+  };
 
   const getProducts = async () => {
     try {
@@ -127,40 +197,6 @@ function App() {
     setLoaded(true);
   };
 
-  useEffect(() => {
-    getProducts();
-    getCategories();
-    validateToken();
-  }, []);
-
-  useEffect(() => {
-    productRef.current = products;
-  }, [products]);
-
-  useEffect(() => {
-    // create websocket
-    if (ws == null) {
-      //const ws = new WebSocket("ws://localhost:8080/api/ws");
-      const ws = new WebSocket("ws://bookify.website/api/ws");
-
-      ws.onmessage = (message) => {
-        const eventMessage = JSON.parse(message.data);
-        // split eventName and arguments
-        const [...args] = eventMessage.data;
-        handleEventMessage(eventMessage.event, ...args);
-      };
-
-      setWs(ws);
-    }
-
-    // Clean up WebSocket connection when component unmounts or ws changes
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [loaded]);
-
   const handleEventMessage = (event, ...args) => {
     switch (event) {
       case "updateUser":
@@ -181,14 +217,17 @@ function App() {
         break;
       }
       case "createCategory": {
+        updateCategoryEvent(args[0]);
         publish("createCategory", args[0]);
         break;
       }
       case "updateCategory": {
+        updateCategoryEvent(args[0]);
         publish("updateCategory", args[0]);
         break;
       }
       case "deleteCategory": {
+        deleteCategoryEvent(args[0]);
         publish("deleteCategory", args[0]);
         break;
       }
@@ -249,6 +288,9 @@ function App() {
             </Route>
             <Route path="/confirm" element={<Layout user={user} />}>
               <Route index element={<ConfirmUser />} />
+            </Route>
+            <Route path="/product/:id" element={<Layout user={user} />}>
+              <Route index element={<ProductInfo />} />
             </Route>
           </Routes>
         ) : (
