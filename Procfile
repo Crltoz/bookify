@@ -1,0 +1,1 @@
+web: cd src && mvn spring-boot:run
