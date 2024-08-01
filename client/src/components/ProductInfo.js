@@ -16,7 +16,9 @@ import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import "./css/ProductInfo.css";
 import DialogCarousel from "./DialogCarousel";
-import { TextField, InputAdornment, Icon } from "@mui/material";
+import { Icon } from "@mui/material";
+import axios from "axios";
+import { subscribe, unsubscribe } from "../events";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="right" ref={ref} {...props} />;
@@ -29,10 +31,45 @@ function srcset(image) {
   };
 }
 
-export default function ProductInfo({ product, onClose }) {
+function getProductId() {
+  return window.location.pathname.split("/")[2];
+}
+
+export default function ProductInfo() {
   const [images, setImages] = React.useState([]);
   const [index, setIndex] = React.useState(-1);
+  const [product, setProduct] = React.useState(null);
   const [showGalery, setShowGalery] = React.useState(false);
+
+  const onClose = () => {
+    // close the dialog, go back to the previous page in location
+    window.history.back();
+  };
+
+  React.useEffect(() => {
+    // the client here is in url http://localhost:3000/product/:id
+    const productId = getProductId();
+
+    if (!productId) return;
+    // get the product by id
+    axios.get(`/products/get/${productId}`).then((response) => {
+      if (response.status != 200) {
+        // send to main
+        window.location.href = "/";
+        return;
+      }
+
+      setProduct(response.data);
+    });
+
+    subscribe("updateProduct", updateProductEvent);
+    subscribe("deleteProduct", deleteProductEvent);
+
+    return () => {
+      unsubscribe("updateProduct");
+      unsubscribe("deleteProduct");
+    };
+  }, []);
 
   React.useEffect(() => {
     setImages(product?.images || []);
@@ -41,6 +78,28 @@ export default function ProductInfo({ product, onClose }) {
   const toggleGalery = (index) => {
     setIndex(index);
     setShowGalery(index !== -1);
+  };
+
+  const updateProductEvent = ({ detail }) => {
+    const productId = detail;
+    if (getProductId() === productId) {
+      try {
+        axios.get(`/products/get/${productId}`).then((response) => {
+          if (response.status != 200) return;
+          setProduct(response.data);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const deleteProductEvent = ({ detail }) => {
+    const productId = detail;
+    if (getProductId() === productId) {
+      onClose();
+      return;
+    }
   };
 
   return (

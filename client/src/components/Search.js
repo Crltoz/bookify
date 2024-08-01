@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import ProductInfo from "./ProductInfo";
 import ProductEntry from "./ProductEntry";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -15,8 +14,6 @@ const Search = ({ categories }) => {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const productRef = useRef(products);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const selectedItemRef = useRef(selectedItem);
   const [checked, setChecked] = React.useState([0]);
 
   useEffect(() => {
@@ -28,16 +25,14 @@ const Search = ({ categories }) => {
 
     return () => {
       unsubscribe("updateProduct");
+      unsubscribe("deleteProduct");
+      unsubscribe("createProduct");
     };
   }, []);
 
   useEffect(() => {
     productRef.current = products;
   }, [products]);
-
-  useEffect(() => {
-    selectedItemRef.current = selectedItem;
-  }, [selectedItem]);
 
   const handleToggle = (value) => () => {
     const currentIndex = checked.indexOf(value);
@@ -65,10 +60,6 @@ const Search = ({ categories }) => {
     const productId = detail;
     const newProducts = productRef.current.filter((it) => it.id != productId);
     setProducts(newProducts);
-
-    if (selectedItemRef.current && selectedItemRef.current.id === productId) {
-      setSelectedItem(null);
-    }
   };
 
   const updateProductEvent = async ({ detail }) => {
@@ -88,24 +79,17 @@ const Search = ({ categories }) => {
 
       newProducts[index] = product;
       setProducts(newProducts);
-
-      if (selectedItemRef.current) {
-        const selectedItemUpdated = newProducts.find(
-          (product) => product.id === selectedItemRef.current.id
-        );
-        setSelectedItem(selectedItemUpdated);
-      }
     } catch (e) {
       console.error(e);
     }
   };
 
+  const onSelectItem = (product) => {
+    window.location.href = `/product/${product.id}`;
+  };
+
   return (
     <div className="container-fluid search min-vh-100">
-      <ProductInfo
-        product={selectedItem}
-        onClose={() => setSelectedItem(null)}
-      />
       <div className="row d-flex justify-content-center">
         <div className="col-sm-3 mb-5">
           <input
@@ -158,13 +142,14 @@ const Search = ({ categories }) => {
                   .includes(search.toLowerCase())) &&
               (checked.length == 0 ||
                 checked.find(
-                  (index) => categories[index]?.products?.indexOf(product.id) != -1
+                  (index) =>
+                    categories[index]?.products?.indexOf(product.id) != -1
                 ) != null);
             return (
               filters && (
                 <ProductEntry
                   product={product}
-                  onSelectItem={(product) => setSelectedItem(product)}
+                  onSelectItem={(product) => onSelectItem(product)}
                   key={product.id}
                 />
               )

@@ -9,24 +9,22 @@ import {
   faLocationPin,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
-import ProductInfo from "./ProductInfo";
 import ProductEntry from "./ProductEntry";
 
 const Home = ({ products }) => {
-  const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [limitedProducts, setLimitedProducts] = useState([]);
 
   useEffect(() => {
     setLimitedProducts(products.slice(page * 10 - 10, page * 10));
-    if (selectedItem) { 
-      const selectedItemUpdated = products.find((product) => product.id === selectedItem.id);
-      setSelectedItem(selectedItemUpdated);
-    }
   }, [page, products]);
 
   const goToSearch = () => {
     window.location.href = "/search";
+  };
+
+  const onSelectItem = (product) => {
+    window.location.href = `/product/${product.id}`;
   };
 
   useEffect(() => {
@@ -60,7 +58,6 @@ const Home = ({ products }) => {
         </div>
       </div>
 
-      <ProductInfo product={selectedItem} onClose={() => setSelectedItem(null)} />
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
@@ -68,7 +65,7 @@ const Home = ({ products }) => {
             <div className="col-12 col-md-6 mb-4" key={product.id}>
               <ProductEntry
                 product={product}
-                onSelectItem={(product) => setSelectedItem(product)}
+                onSelectItem={(product) => onSelectItem(product)}
               />
             </div>
           ))}
