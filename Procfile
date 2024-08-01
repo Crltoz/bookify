@@ -1,1 +1,1 @@
-web: cd src && mvn spring-boot:run
+web: cd src && java -cp target/classes:target/dependency/* BookifyApplication
