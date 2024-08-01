@@ -1,1 +1,1 @@
-web: cd src && java -cp target/classes:target/dependency/* BookifyApplication
+web: cd src && java -jar target/bookify-1.0.0-SNAPSHOT.jar
