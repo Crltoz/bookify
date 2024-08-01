@@ -19,10 +19,8 @@ import DialogCarousel from "./DialogCarousel";
 import { Icon } from "@mui/material";
 import axios from "axios";
 import { subscribe, unsubscribe } from "../events";
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="right" ref={ref} {...props} />;
-});
+import Loading from "../Loading";
+import ProductInfoLoader from "./ProductInfoLoader";
 
 function srcset(image) {
   return {
@@ -41,6 +39,7 @@ export default function ProductInfo() {
   const [index, setIndex] = React.useState(-1);
   const [product, setProduct] = React.useState(null);
   const [showGalery, setShowGalery] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   const onClose = () => {
     // close the dialog, go back to the previous page in location
@@ -60,6 +59,10 @@ export default function ProductInfo() {
       }
 
       setProduct(response.data);
+      setTimeout(() => {
+        // extra time to load images
+        setLoading(false);
+      }, 1000);
     });
 
     subscribe("updateProduct", updateProductEvent);
@@ -102,12 +105,11 @@ export default function ProductInfo() {
     }
   };
 
-  return (
+  return !loading ? (
     <Dialog
       fullScreen
       open={product != null}
       onClose={onClose}
-      TransitionComponent={Transition}
     >
       <DialogCarousel
         open={showGalery}
@@ -198,5 +200,5 @@ export default function ProductInfo() {
         <hr></hr>
       </div>
     </Dialog>
-  );
+  ) : (<ProductInfoLoader />);
 }

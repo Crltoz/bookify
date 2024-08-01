@@ -10,13 +10,11 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import { jwtDecode } from "jwt-decode";
 import Profile from "./components/Profile";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import logo from "./assets/img/bookify-logo-big.webp";
 import Search from "./components/Search";
 import ConfirmUser from "./components/ConfirmUser";
 import { publish } from "./events";
 import ProductInfo from "./components/ProductInfo";
+import Loading from "./Loading";
 
 axios.defaults.baseURL = "https://bookify.website/api";
 
@@ -294,17 +292,7 @@ function App() {
             </Route>
           </Routes>
         ) : (
-          <div className="d-block justify-content-center align-items-center min-vh-100 bg-primary text-white">
-            <div>
-              <img
-                src={logo}
-                className="bg-secondary rounded mt-5"
-                width="150px"
-                alt="Bookify"
-              />
-            </div>
-            <FontAwesomeIcon className="mt-5" icon={faSpinner} spin size="3x" />
-          </div>
+          <Loading />
         )}
         <Footer />
       </div>

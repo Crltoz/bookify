@@ -10,13 +10,19 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import ProductEntry from "./ProductEntry";
+import HomeLoader from "./HomeLoader";
 
 const Home = ({ products }) => {
   const [page, setPage] = useState(1);
   const [limitedProducts, setLimitedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLimitedProducts(products.slice(page * 10 - 10, page * 10));
+    setTimeout(() => {
+      // give time to load the products
+      setLoading(false);
+    }, 1000);
   }, [page, products]);
 
   const goToSearch = () => {
@@ -52,7 +58,10 @@ const Home = ({ products }) => {
               placeholder="Check in - Check out"
             />
           </div>
-          <button className="btn btn-primary search-button text-white" onClick={goToSearch}>
+          <button
+            className="btn btn-primary search-button text-white"
+            onClick={goToSearch}
+          >
             <FontAwesomeIcon icon={faSearch} /> Buscar
           </button>
         </div>
@@ -61,14 +70,20 @@ const Home = ({ products }) => {
       <div className="recommendations mt-5">
         <h2 className="text-center title">Recomendaciones</h2>
         <div className="row justify-content-center mt-4">
-          {limitedProducts.map((product) => (
-            <div className="col-12 col-md-6 mb-4" key={product.id}>
-              <ProductEntry
-                product={product}
-                onSelectItem={(product) => onSelectItem(product)}
-              />
-            </div>
-          ))}
+          {limitedProducts.map((product) =>
+            !loading ? (
+              <div className="col-12 col-md-6 mb-4" key={product.id}>
+                <ProductEntry
+                  product={product}
+                  onSelectItem={(product) => onSelectItem(product)}
+                />
+              </div>
+            ) : (
+              <div className="col-12 col-md-6 mb-4" key={product.id}>
+                <HomeLoader />
+              </div>
+            )
+          )}
         </div>
       </div>
 
