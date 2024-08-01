@@ -4,6 +4,7 @@ import dev.crltoz.bookify.product.Product;
 import dev.crltoz.bookify.product.ProductService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,9 @@ public class CardController {
     @Autowired
     ProductService productService;
 
+    @Value("${env.URL}")
+    private String URL;
+
     @GetMapping("/productCard")
     public String getProductCard(@RequestParam String id, Model model) {
         Optional<Product> product = productService.getProductById(new ObjectId(id));
@@ -24,6 +28,8 @@ public class CardController {
             return "redirect:/";
         }
 
+        // set map url, used in html to redirect to product page
+        product.get().setMapUrl(URL + "/product?id=" + product.get().getId());
         model.addAttribute("product", product.get());
         return "productCard";
     }
