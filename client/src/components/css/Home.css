@@ -32,6 +32,13 @@
     font-weight: 400;
 }
 
+@media (min-width: 1920px) {
+    .recommendations {
+        margin-left: 15%;
+        margin-right: 15%;
+    }
+}
+
 @media (max-width: 1199px) {
     .header-bottom h1 {
         font-size: 1.75rem;

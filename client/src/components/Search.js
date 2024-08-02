@@ -156,9 +156,7 @@ const Search = ({ categories }) => {
                 onSelectItem={(product) => onSelectItem(product)}
                 key={product.id}
               />
-            ) : (
-              <HomeLoader key={product.id} />
-            );
+            ) : ( loading && <HomeLoader key={product.id} />);
           })}
         </div>
       </div>

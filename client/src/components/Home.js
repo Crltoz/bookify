@@ -67,12 +67,12 @@ const Home = ({ products }) => {
         </div>
       </div>
 
-      <div className="recommendations mt-5">
-        <h2 className="text-center title">Recomendaciones</h2>
-        <div className="row justify-content-center mt-4">
+      <div className="recommendations">
+        <h2 className="text-center title mt-5">Recomendaciones</h2>
+        <div className="row justify-content-center">
           {limitedProducts.map((product) =>
             !loading ? (
-              <div className="col-12 col-md-6 mb-4" key={product.id}>
+              <div className="col-12 col-md-6 mb-2" key={product.id}>
                 <ProductEntry
                   product={product}
                   onSelectItem={(product) => onSelectItem(product)}

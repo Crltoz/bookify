@@ -110,7 +110,11 @@ export default function ProductInfo() {
 
   return !loading ? (
     <Dialog fullScreen open={product != null} onClose={onClose}>
-      <Share open={openShare} productId={getProductId()} onClose={() => setOpenShare(false)} />
+      <Share
+        open={openShare}
+        productId={getProductId}
+        onClose={() => setOpenShare(false)}
+      />
       <DialogCarousel
         open={showGalery}
         images={images}
@@ -178,35 +182,39 @@ export default function ProductInfo() {
           </button>
         </div>
       </div>
-      <hr></hr>
-      <div className="container-fluid">
-        <div className="row m-3 mb-0">
-          <h5>
-            <FontAwesomeIcon icon={faList} /> Descripción
-          </h5>
-        </div>
+      <div className="container d-flex justify-content-center">
+        <div className="w-100">
+          <hr></hr>
+          <div className="row m-3 mb-0">
+            <h5>
+              <FontAwesomeIcon icon={faList} /> Descripción
+            </h5>
+          </div>
 
-        <div className="row m-4 mb-0 mt-0">{product?.description}</div>
-        <hr></hr>
+          <div className="row m-4 mb-0 mt-0">{product?.description}</div>
+          <hr></hr>
 
-        <div className="row m-3 mb-0 d-flex">
-          <h5>
-            <FontAwesomeIcon icon={faCirclePlus} /> Características
-          </h5>
-          {product?.features &&
-            product.features.map((feature, index) => (
-              <div className="col-sm-3 mt-2 mb-2" key={index}>
-                <div className="d-flex align-items-center">
-                  <Icon color="primary">{feature[0]}</Icon>{" "}
-                  <span style={{ marginLeft: "5px" }}>{feature[1]}</span>
+          <div className="row m-3 mb-0 d-flex">
+            <h5>
+              <FontAwesomeIcon icon={faCirclePlus} /> Características
+            </h5>
+            {product?.features &&
+              product.features.map((feature, index) => (
+                <div className="col-sm-3 mt-2 mb-2" key={index}>
+                  <div className="d-flex align-items-center">
+                    <Icon color="primary">{feature[0]}</Icon>{" "}
+                    <span style={{ marginLeft: "5px" }}>{feature[1]}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
         <hr></hr>
       </div>
     </Dialog>
   ) : (
-    <ProductInfoLoader />
+    <div className="container-fluid d-flex justify-content-center align-items-start pt-5 mt-5 min-vh-100">
+      <ProductInfoLoader />
+    </div>
   );
 }
