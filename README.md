@@ -24,8 +24,6 @@
   <a href="#environment-variables">Environment-Variables</a>
   •
   <a href="#license">License</a>
-  •
-  <a href="https://github.com/Crltoz/EntityBot/blob/main/CONTRIBUTING.md">Contributing</a>
 </p>
 
 # ▶️ Overview
