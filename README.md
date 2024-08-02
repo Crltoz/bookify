@@ -125,4 +125,4 @@ Esta es la URL que se usará para generar links, como por ejemplo la de confirma
 
 # 🧾 License
 
-Released under the [MIT](https://github.com/Crltoz/) license.
+Released under the [MIT](https://github.com/Crltoz/bookify/blob/main/LICENSE) license.
