@@ -114,7 +114,7 @@ const AdminListCategories = () => {
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container">
       <EditCategory
         open={editCategory != null}
         category={editCategory}

@@ -146,7 +146,7 @@ const AdminListProducts = () => {
   };
 
   return (
-    <div className="container-fluid justify-content-center align-items-center">
+    <div className="container justify-content-center align-items-center">
       <DeleteProduct
         product={deleteProduct}
         confirmDelete={confirmDelete}
