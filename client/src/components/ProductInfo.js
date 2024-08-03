@@ -112,7 +112,7 @@ export default function ProductInfo() {
     <Dialog fullScreen open={product != null} onClose={onClose}>
       <Share
         open={openShare}
-        productId={getProductId}
+        productId={getProductId()}
         onClose={() => setOpenShare(false)}
       />
       <DialogCarousel

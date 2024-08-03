@@ -7,29 +7,39 @@ import {
   Grid,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFacebook, faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
+import {
+  faFacebook,
+  faInstagram,
+  faTwitter,
+} from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 
 const shareText = "¡Mira este producto de Bookify! ";
 const baseURL = window.location.origin;
 
 const Share = ({ open, onClose, productId }) => {
-    const shareUrl = `${baseURL}/productCard?id=${productId}`;
-
   const handleShareTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    const shareUrl = `${baseURL}/productCard?id=${productId}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+      shareUrl
+    )}&text=${encodeURIComponent(shareText)}`;
     window.open(url, "_blank");
   };
 
   const handleShareEmail = () => {
+    const shareUrl = `${baseURL}/productCard?id=${productId}`;
     const subject = "Mira este producto en Bookify";
     const body = `Ey,\n\nEstuve revisando hoteles y lugares para reservar en Bookify. Mira este: ${shareUrl}\n\n¡Nos vemos!`;
-    const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const url = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
     window.location.href = url;
   };
 
   const handleShareFacebook = () => {
-    const url = `http://www.facebook.com/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    const url = `http://www.facebook.com/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`;
     window.open(url, "_blank");
   };
 
