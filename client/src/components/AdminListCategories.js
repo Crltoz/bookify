@@ -167,7 +167,7 @@ const AdminListCategories = () => {
                     </button>
                     <button
                       className="btn btn-danger m-2"
-                      onClick={() => setDeleteCategory(category)}
+                      onClick={() => setSelectedDeleteCategory(category)}
                     >
                       Eliminar
                     </button>
