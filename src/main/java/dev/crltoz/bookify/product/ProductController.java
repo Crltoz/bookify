@@ -10,13 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
@@ -54,12 +50,14 @@ public class ProductController {
         return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts() {
-        // all products
-        List<Product> products = productService.getAllProducts();
+    @GetMapping("/addresses")
+    public ResponseEntity<Map<String, HashSet<String>>> allAddresses() {
+        return new ResponseEntity<>(productService.getAllAddresses(), HttpStatus.OK);
+    }
 
-        // TODO: Implement search functionality
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String country, @RequestParam String city) {
+        List<Product> products = productService.getProductsByCountryAndCity(country, city);
 
         // return first 100 products
         int toIndex = Math.min(products.size(), 100);
@@ -178,6 +176,7 @@ public class ProductController {
             // remove product from old category
             if (category != null) {
                 categoryService.removeProductFromCategory(category, id);
+                webSocketService.sendMessage("updateCategory", List.of(category.getId()));
             }
 
             // check if new category exists and set
@@ -185,6 +184,7 @@ public class ProductController {
                 if (categoryService.getCategoryById(new ObjectId(productRequest.getCategoryId())).isPresent()) {
                     // add product to new category
                     categoryService.addProductToCategory(new ObjectId(productRequest.getCategoryId()), id);
+                    webSocketService.sendMessage("updateCategory", List.of(productRequest.getCategoryId()));
                 }
             }
         }
@@ -195,11 +195,10 @@ public class ProductController {
                 productRequest.getDescription(),
                 productRequest.getImages(),
                 productRequest.getFeatures(),
-                product.getAddress(),
-                product.getMapUrl()
+                productRequest.getAddress(),
+                productRequest.getMapUrl()
         );
         updatedProduct.setId(id.toString());
-
         productService.save(updatedProduct);
 
         // send websocket message
