@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { subscribe, unsubscribe } from "../events";
 import DialogText from "./DialogText";
 import EditCategory from "./EditCategory";
+import DeleteConfirmation from "./DeleteProduct";
 
 const AdminListCategories = () => {
   const [categories, setCategories] = useState([]);
