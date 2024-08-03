@@ -20,7 +20,7 @@ const ProductEntry = ({ product, onSelectItem }) => {
           <p className="card-text">{product.description}</p>
           <button href={product.link} className="btn btn-outline-success">
             <FontAwesomeIcon icon={faLocationPin} className="me-2" />
-            Ubicación
+            { product.address.country + ", " + product.address.city }
           </button>
         </div>
       </div>

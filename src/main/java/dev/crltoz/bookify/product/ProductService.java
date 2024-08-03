@@ -28,23 +28,19 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public List<Product> getProductsByCountryAndCity(String country, String city) {
-        return productRepository.findByAddress_CountryAndAddress_City(country, city);
+    public List<Product> getProductsByCountryAndCityQuery(String query, String query2, String query3) {
+        return productRepository.findByMultipleQueriesToAddress(query, query2, query3);
     }
 
-    public Map<String, HashSet<String>> getAllAddresses() {
+    public HashSet<Address> getAllAddresses() {
         Collection<ProductSummary> products = productRepository.findAllAddresses();
-        HashMap<String, HashSet<String>> addressMap = new HashMap<>(Collections.emptyMap());
+        HashSet<Address> addresses = new HashSet<>();
 
         for (ProductSummary productSummary : products) {
             Address address = productSummary.getAddress();
-            if (addressMap.containsKey(address.getCountry())) {
-                addressMap.get(address.getCountry()).add(address.getCity());
-            } else {
-                addressMap.put(address.getCountry(), new HashSet<>(Collections.singletonList(address.getCity())));
-            }
+            addresses.add(address);
         }
 
-        return addressMap;
+        return addresses;
     }
 }

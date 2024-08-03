@@ -11,22 +11,45 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ProductEntry from "./ProductEntry";
 import HomeLoader from "./HomeLoader";
+import axios from "axios";
+import { Autocomplete, TextField, createFilterOptions } from "@mui/material";
+import { Box } from "@mui/system";
 
 const Home = ({ products }) => {
   const [page, setPage] = useState(1);
   const [limitedProducts, setLimitedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [addresses, setAddresses] = useState([]);
+
+  const defaultFilterOptions = createFilterOptions();
+
+  useEffect(() => {
+    axios
+      .get("/products/addresses")
+      .then((response) => {
+        setAddresses(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
   useEffect(() => {
     setLimitedProducts(products.slice(page * 10 - 10, page * 10));
+
     setTimeout(() => {
       // give time to load the products
       setLoading(false);
     }, 1000);
   }, [page, products]);
 
+  const filterOptions = (options, state) => {
+    return defaultFilterOptions(options, state).slice(0, 10);
+  };
+
   const goToSearch = () => {
-    window.location.href = "/search";
+    window.location.href = "/search?query=" + search;
   };
 
   const onSelectItem = (product) => {
@@ -44,10 +67,52 @@ const Home = ({ products }) => {
         <div className="search-bar d-flex flex-column flex-lg-row justify-content-center align-items-center">
           <div className="d-flex align-items-center mb-3 mb-lg-0">
             <FontAwesomeIcon icon={faLocationPin} className="me-2" size="lg" />
-            <input
-              type="text"
-              className="form-control me-2"
-              placeholder="¿A dónde vamos?"
+            <Autocomplete
+              id="search"
+              sx={{ width: 300, backgroundColor: "white", borderRadius: "5px" }}
+              fullWidth
+              disablePortal
+              options={addresses.map(
+                (address) => `${address.country}, ${address.city}`
+              )}
+              value={
+                addresses.find(
+                  (address) =>
+                    address.city.toLowerCase() === search.toLowerCase()
+                ) || ""
+              }
+              noOptionsText="No hay resultados"
+              filterOptions={filterOptions}
+              onChange={(event, value) => setSearch(value || "")}
+              isOptionEqualToValue={(option, value) =>
+                option?.country?.toLowerCase() ===
+                  value?.country?.toLowerCase() ||
+                option?.city?.toLowerCase() === value?.city?.toLowerCase()
+              }
+              renderOption={(props, option) => (
+                <Box
+                  component="li"
+                  sx={{ "& > span": { mr: 2, flexShrink: 0 } }}
+                  {...props}
+                  key={option}
+                >
+                  <FontAwesomeIcon icon={faLocationPin} className="me-2 text-success" />
+                  {option}
+                </Box>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={search.length === 0 ? "¿A dónde vamos?" : ""}
+                  id="search"
+                  type="text"
+                  InputLabelProps={{
+                    shrink: false,
+                    disabled: true,
+                  }}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              )}
             />
           </div>
           <div className="d-flex align-items-center mb-3 mb-lg-0">

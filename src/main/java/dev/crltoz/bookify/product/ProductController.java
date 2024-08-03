@@ -41,27 +41,51 @@ public class ProductController {
 
     @GetMapping("/home")
     public ResponseEntity<List<Product>> homeProducts() {
+        return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
+    }
+
+    private List<Product> getRandomProducts() {
         // all products
         List<Product> products = productService.getAllProducts();
         // shuffle products
         Collections.shuffle(products);
         // return first 100 products
         int toIndex = Math.min(products.size(), 100);
-        return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
+        return products.subList(0, toIndex);
     }
 
     @GetMapping("/addresses")
-    public ResponseEntity<Map<String, HashSet<String>>> allAddresses() {
+    public ResponseEntity<HashSet<Address>> allAddresses() {
         return new ResponseEntity<>(productService.getAllAddresses(), HttpStatus.OK);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String country, @RequestParam String city) {
-        List<Product> products = productService.getProductsByCountryAndCity(country, city);
+    public ResponseEntity<List<Product>> searchProducts(@RequestParam String query) {
+        query = cleanSearchString(query);
 
-        // return first 100 products
-        int toIndex = Math.min(products.size(), 100);
-        return new ResponseEntity<>(products.subList(0, toIndex), HttpStatus.OK);
+        // limit to 3 queries
+        String[] queries = Arrays.stream(query.split(" ")).limit(3).toArray(String[]::new);
+
+        if (query.isBlank() || queries.length == 0) {
+            return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
+        }
+
+        // add the first query to the rest of the queries if there are less than 3
+        while (queries.length < 3) {
+            queries = Arrays.copyOf(queries, queries.length + 1);
+            queries[queries.length - 1] = queries[0];
+        }
+        List<Product> products = productService.getProductsByCountryAndCityQuery(queries[0], queries[1], queries[2]);
+
+        if (products.isEmpty()) {
+            return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    public static String cleanSearchString(String search) {
+        return search.replaceAll("[^a-zA-Z\\s]", "");
     }
 
     @GetMapping("/get/{id}")

@@ -11,12 +11,14 @@ import "./css/Search.css";
 import { subscribe, unsubscribe } from "../events";
 import HomeLoader from "./HomeLoader";
 
+const query = new URLSearchParams(window.location.search).get("query");
+
 const Search = ({ categories }) => {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const productRef = useRef(products);
-  const [checked, setChecked] = React.useState([0]);
+  const [checked, setChecked] = React.useState([]);
 
   useEffect(() => {
     getProducts();
@@ -51,7 +53,7 @@ const Search = ({ categories }) => {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get("/products/search");
+      const response = await axios.get("/products/search?query=" + query);
       setProducts(response.data);
       setTimeout(() => {
         setLoading(false);
@@ -140,11 +142,14 @@ const Search = ({ categories }) => {
         </div>
         <div className="col col-lg-6">
           {products.map((product) => {
+            const lcSearch = search.toLowerCase();
             const filters =
-              (product.name.toLowerCase().includes(search.toLowerCase()) ||
+              (product.name.toLowerCase().includes(lcSearch) ||
                 product.description
                   .toLowerCase()
-                  .includes(search.toLowerCase())) &&
+                  .includes(lcSearch) ||
+                product.address.country.toLowerCase().includes(lcSearch) ||
+                product.address.city.toLowerCase().includes(lcSearch)) &&
               (checked.length == 0 ||
                 checked.find(
                   (index) =>
