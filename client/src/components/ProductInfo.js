@@ -4,7 +4,6 @@ import Dialog from "@mui/material/Dialog";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Slide from "@mui/material/Slide";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -13,6 +12,8 @@ import {
   faPhotoFilm,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
+import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
+import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import "./css/ProductInfo.css";
@@ -43,6 +44,7 @@ export default function ProductInfo() {
   const [showGalery, setShowGalery] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [openShare, setOpenShare] = React.useState(false);
+  const [wishlist, setWishlist] = React.useState([]);
 
   const onClose = () => {
     // close the dialog, go back to the previous page in location
@@ -68,6 +70,11 @@ export default function ProductInfo() {
       }, 1000);
     });
 
+    axios.get("/users/wishlist").then((response) => {
+      if (response.status != 200) return;
+      setWishlist(response.data);
+    });
+
     subscribe("updateProduct", updateProductEvent);
     subscribe("deleteProduct", deleteProductEvent);
 
@@ -84,6 +91,20 @@ export default function ProductInfo() {
   const toggleGalery = (index) => {
     setIndex(index);
     setShowGalery(index !== -1);
+  };
+
+  const toggleProductWishlist = () => {
+    const productId = getProductId();
+
+    if (wishlist.find((it) => it == productId) != null) {
+      axios.delete(`/users/wishlist/remove/${productId}`).then(() => {
+        setWishlist(wishlist.filter((it) => it != productId));
+      });
+    } else {
+      axios.post(`/users/wishlist/add/${productId}`).then(() => {
+        setWishlist([...wishlist, productId]);
+      });
+    }
   };
 
   const updateProductEvent = ({ detail }) => {
@@ -171,14 +192,26 @@ export default function ProductInfo() {
             className="btn btn-outline-primary"
             onClick={() => toggleGalery(0)}
           >
-            <FontAwesomeIcon icon={faCirclePlus} className="me-2" />
-            <FontAwesomeIcon icon={faPhotoFilm} className="me-2" />
+            <FontAwesomeIcon icon={faCirclePlus} />
+            <FontAwesomeIcon icon={faPhotoFilm} className="ms-2" />
           </button>
           <button
             className="btn btn-outline-primary ms-3"
             onClick={() => setOpenShare(true)}
           >
-            <FontAwesomeIcon icon={faShare} className="me-2" />
+            <FontAwesomeIcon icon={faShare} />
+          </button>
+          <button
+            className="btn btn-outline-danger ms-3"
+            onClick={toggleProductWishlist}
+          >
+            <FontAwesomeIcon
+              icon={
+                wishlist.find((it) => it == product.id)
+                  ? faHeartSolid
+                  : faHeartRegular
+              }
+            />
           </button>
         </div>
       </div>

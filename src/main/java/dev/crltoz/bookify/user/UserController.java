@@ -1,6 +1,8 @@
 package dev.crltoz.bookify.user;
 
 import dev.crltoz.bookify.email.EmailService;
+import dev.crltoz.bookify.product.Product;
+import dev.crltoz.bookify.product.ProductService;
 import dev.crltoz.bookify.util.JwtUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +46,9 @@ public class UserController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private ProductService productService;
 
     @Value("${env.URL}")
     private String URL;
@@ -100,20 +106,80 @@ public class UserController {
         return new ResponseEntity<>(newToken, HttpStatus.OK);
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Optional<User>> getUserById(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
-        if (!userService.isAdmin(token)) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+    @GetMapping("/wishlist")
+    public ResponseEntity<List<String>> getWishlist(@RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
         }
 
         // return 404 if user not found
-        Optional<User> user = userService.getUserById(id);
+        Optional<User> user = userService.getUserById(new ObjectId(userId));
         if (user.isEmpty()) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND);
         }
 
-        user.get().setPassword(null); // don't return password for security reasons
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user.get().getWishlist(), HttpStatus.OK);
+    }
+
+    @PostMapping("/wishlist/add/{id}")
+    public ResponseEntity<String> addToWishlist(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // return 404 if user not found
+        Optional<User> user = userService.getUserById(new ObjectId(userId));
+        if (user.isEmpty()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        // return 404 if product not found
+        Optional<Product> product = productService.getProductById(id);
+        if (product.isEmpty()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        if (user.get().getWishlist().contains(product.get().getId())) {
+            return new ResponseEntity<>("null", HttpStatus.CONFLICT);
+        }
+
+        // add product to wishlist
+        user.get().getWishlist().add(product.get().getId());
+        userService.save(user.get());
+        return new ResponseEntity<>("null", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/wishlist/remove/{id}")
+    public ResponseEntity<String> removeFromWishlist(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
+        }
+
+        // return 404 if user not found
+        Optional<User> user = userService.getUserById(new ObjectId(userId));
+        if (user.isEmpty()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        // remove product from wishlist
+        user.get().getWishlist().remove(id.toString());
+        userService.save(user.get());
+        return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
     @PostMapping("/register")
