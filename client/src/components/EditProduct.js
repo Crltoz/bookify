@@ -136,12 +136,20 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
     setDialogText("");
   };
 
+  const handleClose = () => {
+    setImages([]);
+    setFeatures([]);
+    setDialogText("");
+    setCategoryName("");
+    onCancel();
+  };
+
   return (
     <>
       <DialogText text={dialogText} onClose={onCloseDialogText} />
       <Dialog
         open={open}
-        onClose={onCancel}
+        onClose={() => handleClose()}
         PaperProps={{
           component: "form",
           onSubmit: (event) => {
@@ -172,6 +180,14 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
               setDialogText("Debe agregar una descripción al producto.");
               return;
             }
+
+            // set address
+            newProduct.address = {
+              country: newProduct.country,
+              city: newProduct.city,
+            };
+            delete newProduct.country;
+            delete newProduct.city;
 
             // set features
             newProduct.features = [];
@@ -229,7 +245,9 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             disablePortal
             options={categories.map((category) => category.name)}
             value={
-              categories.find((category) => category.products.indexOf(product?.id) != -1)?.name || ""
+              categories.find(
+                (category) => category.products.indexOf(product?.id) != -1
+              )?.name || ""
             }
             onChange={(event, value) => setCategoryName(value || "")}
             isOptionEqualToValue={(option, value) => option.name === value.name}
@@ -241,6 +259,34 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
                 type="text"
               />
             )}
+          />
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="country"
+            name="country"
+            label="País"
+            type="text"
+            fullWidth
+            multiline
+            maxRows={4}
+            variant="outlined"
+            inputProps={{ defaultValue: product?.address?.country || "" }}
+          />
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="city"
+            name="city"
+            label="Ciudad"
+            type="text"
+            fullWidth
+            multiline
+            maxRows={4}
+            variant="outlined"
+            inputProps={{ defaultValue: product?.address?.city || "" }}
           />
           <input type="hidden" name="categoryName" value={categoryName} />
           {product?.features
@@ -335,7 +381,11 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             <FontAwesomeIcon icon={faCirclePlus} />{" "}
             <span style={{ marginLeft: "5px" }}>imagen</span>
           </Button>
-          <Button onClick={onCancel} variant="outlined" color="error">
+          <Button
+            onClick={() => handleClose()}
+            variant="outlined"
+            color="error"
+          >
             Cancelar
           </Button>
           <Button type="submit" variant="contained" color="success">
