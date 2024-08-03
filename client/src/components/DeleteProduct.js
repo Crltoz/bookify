@@ -11,13 +11,15 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function DeleteProduct({
-  product,
+export default function DeleteConfirmation({
+  productOrCategory,
+  title,
+  description,
   confirmDelete,
   cancelDelete,
 }) {
   const handleConfirm = () => {
-    confirmDelete(product);
+    confirmDelete(productOrCategory);
   };
 
   const handleClose = () => {
@@ -26,16 +28,16 @@ export default function DeleteProduct({
 
   return (
     <Dialog
-      open={product != null}
+      open={productOrCategory != null}
       TransitionComponent={Transition}
       keepMounted
       onClose={handleClose}
       aria-describedby="alert-dialog-slide-description"
     >
-      <DialogTitle>{"Delete product confirmation."}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-slide-description">
-          Are you sure you want to delete '{product?.name || "null"}' product?
+          {description.replace("{name}", productOrCategory?.name || "Sin nombre")}
         </DialogContentText>
       </DialogContent>
       <DialogActions>

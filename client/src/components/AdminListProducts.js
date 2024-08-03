@@ -5,6 +5,7 @@ import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
 import { useRef } from "react";
 import { subscribe, unsubscribe } from "../events";
+import DeleteConfirmation from "./DeleteProduct";
 
 const AdminListProducts = () => {
   const [products, setProducts] = useState([]);
@@ -147,8 +148,10 @@ const AdminListProducts = () => {
 
   return (
     <div className="container justify-content-center align-items-center">
-      <DeleteProduct
-        product={deleteProduct}
+      <DeleteConfirmation
+        productOrCategory={deleteProduct}
+        title="Eliminar producto"
+        description="¿Estás seguro de que quieres eliminar el producto {name}? Esta acción es irreversible."
         confirmDelete={confirmDelete}
         cancelDelete={cancelDelete}
       />

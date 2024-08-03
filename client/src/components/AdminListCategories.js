@@ -9,6 +9,7 @@ const AdminListCategories = () => {
   let categoriesRef = useRef(categories);
   const [dialogText, setDialogText] = useState("");
   const [editCategory, setEditCategory] = useState(null);
+  const [deleteCategory, setDeleteCategory] = useState(null);
 
   useEffect(() => {
     axios.get("/categories").then((response) => {
@@ -113,6 +114,11 @@ const AdminListCategories = () => {
     setEditCategory(null);
   };
 
+  const confirmDelete = async (category) => {
+    await handleDeleteCategory(category);
+    setDeleteCategory(null);
+  };
+
   return (
     <div className="container">
       <EditCategory
@@ -120,6 +126,13 @@ const AdminListCategories = () => {
         category={editCategory}
         onCancel={() => setEditCategory(null)}
         onConfirm={(newCategory) => handleEditCategory(newCategory)}
+      />
+      <DeleteConfirmation
+        productOrCategory={deleteCategory}
+        title="Eliminar categoría"
+        description="¿Estás seguro de que quieres eliminar la categoría {name}? Esta acción es irreversible. Los productos de esta categoría no serán afectados, sólo perderán la categoría asignada."
+        confirmDelete={confirmDelete}
+        cancelDelete={() => setDeleteCategory(null)}
       />
       <DialogText text={dialogText} onClose={() => setDialogText("")} />
       <div className="d-flex flex-column w-100">
@@ -153,7 +166,7 @@ const AdminListCategories = () => {
                     </button>
                     <button
                       className="btn btn-danger m-2"
-                      onClick={() => handleDeleteCategory(category)}
+                      onClick={() => setDeleteCategory(category)}
                     >
                       Eliminar
                     </button>
