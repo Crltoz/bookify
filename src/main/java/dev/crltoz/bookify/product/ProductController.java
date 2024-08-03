@@ -2,7 +2,9 @@ package dev.crltoz.bookify.product;
 
 import dev.crltoz.bookify.category.Category;
 import dev.crltoz.bookify.category.CategoryService;
+import dev.crltoz.bookify.user.User;
 import dev.crltoz.bookify.user.UserService;
+import dev.crltoz.bookify.util.JwtUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -29,6 +31,9 @@ public class ProductController {
 
     @Autowired
     private WebSocketService webSocketService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
@@ -104,6 +109,38 @@ public class ProductController {
             return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
         }
 
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/wishlist")
+    public ResponseEntity<List<Product>> getWishlist(@RequestHeader("Authorization") String token) {
+        // check if is admin
+        if (!jwtUtil.isValidToken(token)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        // get user from token
+        String userId = jwtUtil.getId(token);
+        if (userId == null || !ObjectId.isValid(userId)) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.getUserById(new ObjectId(userId)).orElse(null);
+        if (user == null) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        List<String> productIds = user.getWishlist();
+        if (productIds == null || productIds.isEmpty()) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+        }
+
+        List<Product> products = new ArrayList<>();
+        for (String productId : productIds) {
+            Optional<Product> product = productService.getProductById(new ObjectId(productId));
+            product.ifPresent(products::add);
+        }
+        
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 

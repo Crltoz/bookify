@@ -5,6 +5,7 @@ import { Menu, MenuItem, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
 import LogoutIcon from "@mui/icons-material/Logout";
+import HeartIcon from "@mui/icons-material/Favorite";
 import AdminPanelSettingIcon from "@mui/icons-material/AdminPanelSettings";
 import axios from "axios";
 
@@ -41,6 +42,11 @@ const Header = ({ user }) => {
   const goToAdminPanel = () => {
     handleClose();
     window.location.href = "/admin";
+  };
+
+  const goToWishlist = () => {
+    handleClose();
+    window.location.href = "/search?query=&wishlist=true";
   };
 
   const handleLogout = () => {
@@ -112,6 +118,18 @@ const Header = ({ user }) => {
                     </div>
                     <div className="col d-flex justify-content-left">
                       <a>Reservas</a>
+                    </div>
+                  </MenuItem>
+                </div>
+                <div className="row">
+                  <MenuItem onClick={goToWishlist}>
+                    <div className="col-lg-4 d-flex justify-content-left">
+                      <IconButton>
+                        <HeartIcon />
+                      </IconButton>
+                    </div>
+                    <div className="col d-flex justify-content-left">
+                      <a>Favoritos</a>
                     </div>
                   </MenuItem>
                 </div>

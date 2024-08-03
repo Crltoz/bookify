@@ -12,6 +12,7 @@ import { subscribe, unsubscribe } from "../events";
 import HomeLoader from "./HomeLoader";
 
 const query = new URLSearchParams(window.location.search).get("query");
+const wishlist = new URLSearchParams(window.location.search).get("wishlist");
 
 const Search = ({ categories }) => {
   const [search, setSearch] = useState("");
@@ -26,17 +27,26 @@ const Search = ({ categories }) => {
     subscribe("updateProduct", updateProductEvent);
     subscribe("deleteProduct", deleteProductEvent);
     subscribe("createProduct", updateProductEvent);
+    subscribe("updateWishlist", updateWishlistEvent);
 
     return () => {
       unsubscribe("updateProduct");
       unsubscribe("deleteProduct");
       unsubscribe("createProduct");
+      unsubscribe("updateWishlist");
     };
   }, []);
 
   useEffect(() => {
     productRef.current = products;
   }, [products]);
+
+  const updateWishlistEvent = () => {
+    if (!wishlist) return;
+
+    getProducts();
+  };
+
 
   const handleToggle = (value) => () => {
     const currentIndex = checked.indexOf(value);
@@ -53,7 +63,8 @@ const Search = ({ categories }) => {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get("/products/search?query=" + query);
+      const endpoint = wishlist ? "/products/wishlist" : "/products/search?query=" + query;
+      const response = await axios.get(endpoint);
       setProducts(response.data);
       setTimeout(() => {
         setLoading(false);
@@ -78,11 +89,7 @@ const Search = ({ categories }) => {
 
       const newProducts = [...productRef.current];
       const index = newProducts.findIndex((it) => it.id == productId);
-      if (index == -1) {
-        newProducts.push(product);
-        setProducts(newProducts);
-        return;
-      }
+      if (index == -1) return;
 
       newProducts[index] = product;
       setProducts(newProducts);
@@ -98,6 +105,8 @@ const Search = ({ categories }) => {
   return (
     <div className="container-fluid search min-vh-100">
       <div className="row d-flex justify-content-center">
+        <h1>{ wishlist ? "Favoritos" : "Búsqueda" }</h1>
+        <hr></hr>
         <div className="col-sm-3">
           <div className="sticky-top" style={{ paddingTop: '70px' }}>
             <input
@@ -149,7 +158,7 @@ const Search = ({ categories }) => {
             </div>
           </div>
         </div>
-        <div className="col col-lg-6">
+        <div className="col col-lg-6 pt-5">
           {products.map((product) => {
             const lcSearch = search.toLowerCase();
             const filters =

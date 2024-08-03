@@ -77,10 +77,17 @@ export default function ProductInfo() {
 
     subscribe("updateProduct", updateProductEvent);
     subscribe("deleteProduct", deleteProductEvent);
+    subscribe("updateWishlist", () => {
+      axios.get("/users/wishlist").then((response) => {
+        if (response.status != 200) return;
+        setWishlist(response.data);
+      });
+    });
 
     return () => {
       unsubscribe("updateProduct");
       unsubscribe("deleteProduct");
+      unsubscribe("updateWishlist");
     };
   }, []);
 
@@ -97,13 +104,9 @@ export default function ProductInfo() {
     const productId = getProductId();
 
     if (wishlist.find((it) => it == productId) != null) {
-      axios.delete(`/users/wishlist/remove/${productId}`).then(() => {
-        setWishlist(wishlist.filter((it) => it != productId));
-      });
+      axios.delete(`/users/wishlist/remove/${productId}`)
     } else {
-      axios.post(`/users/wishlist/add/${productId}`).then(() => {
-        setWishlist([...wishlist, productId]);
-      });
+      axios.post(`/users/wishlist/add/${productId}`)
     }
   };
 

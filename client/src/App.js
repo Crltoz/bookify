@@ -229,6 +229,10 @@ function App() {
         publish("deleteCategory", args[0]);
         break;
       }
+      case "updateWishlist": {
+        publish("updateWishlist", args[0]);
+        break;
+      }
       default:
         console.log("Unknown event type: ", event);
     }

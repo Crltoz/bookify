@@ -156,6 +156,9 @@ public class UserController {
         // add product to wishlist
         user.get().getWishlist().add(product.get().getId());
         userService.save(user.get());
+
+        // send webhook to get wishlist
+        webSocketService.sendMessage("updateWishlist", List.of(user.get().getId()));
         return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
@@ -179,6 +182,9 @@ public class UserController {
         // remove product from wishlist
         user.get().getWishlist().remove(id.toString());
         userService.save(user.get());
+
+        // send webhook to get wishlist
+        webSocketService.sendMessage("updateWishlist", List.of(user.get().getId()));
         return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
