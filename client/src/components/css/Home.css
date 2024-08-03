@@ -37,6 +37,11 @@
         margin-left: 15%;
         margin-right: 15%;
     }
+
+    .categories {
+        margin-left: 25%;
+        margin-right: 25%;
+    }
 }
 
 @media (max-width: 1199px) {
@@ -106,6 +111,12 @@
 .card-img-left {
     width: 300px;
     height: 300px;
+    object-fit: cover;
+}
+
+.card-img-center {
+    width: 450px;
+    height: 450px;
     object-fit: cover;
 }
 

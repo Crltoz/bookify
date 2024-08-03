@@ -14,6 +14,7 @@ import HomeLoader from "./HomeLoader";
 import axios from "axios";
 import { Autocomplete, TextField, createFilterOptions } from "@mui/material";
 import { Box } from "@mui/system";
+import CategoryEntry from "./CategoryEntry";
 
 const Home = ({ products }) => {
   const [page, setPage] = useState(1);
@@ -21,6 +22,7 @@ const Home = ({ products }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [addresses, setAddresses] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const defaultFilterOptions = createFilterOptions();
 
@@ -29,6 +31,15 @@ const Home = ({ products }) => {
       .get("/products/addresses")
       .then((response) => {
         setAddresses(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    axios
+      .get("/categories")
+      .then((response) => {
+        setCategories(response.data);
       })
       .catch((error) => {
         console.error(error);
@@ -55,6 +66,10 @@ const Home = ({ products }) => {
   const onSelectItem = (product) => {
     window.location.href = `/product?id=${product.id}`;
   };
+
+  const handleSelectCategory = React.useCallback((category) => {
+    window.location.href = `/search?query=${category.name}`;
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -96,7 +111,10 @@ const Home = ({ products }) => {
                   {...props}
                   key={option}
                 >
-                  <FontAwesomeIcon icon={faLocationPin} className="me-2 text-success" />
+                  <FontAwesomeIcon
+                    icon={faLocationPin}
+                    className="me-2 text-success"
+                  />
                   {option}
                 </Box>
               )}
@@ -129,6 +147,26 @@ const Home = ({ products }) => {
           >
             <FontAwesomeIcon icon={faSearch} /> Buscar
           </button>
+        </div>
+      </div>
+
+      <div className="categories">
+        <h2 className="text-center title mt-5">Categorías</h2>
+        <div className="row justify-content-center">
+          {categories.map((category) =>
+            !loading ? (
+              <div className="col-12 col-md-6 mb-2" key={category.id}>
+                <CategoryEntry
+                  category={category}
+                  onSelectCategory={handleSelectCategory}
+                />
+              </div>
+            ) : (
+              <div className="col-12 col-md-6 mb-4" key={category.id}>
+                <HomeLoader />
+              </div>
+            )
+          )}
         </div>
       </div>
 

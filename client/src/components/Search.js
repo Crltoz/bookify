@@ -98,46 +98,55 @@ const Search = ({ categories }) => {
   return (
     <div className="container-fluid search min-vh-100">
       <div className="row d-flex justify-content-center">
-        <div className="col-sm-3 mb-5">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <div className="list-group">
-            <List
-              sx={{
-                width: "100%",
-                bgcolor: "background.paper",
-              }}
-            >
-              {categories.map((category, index) => {
-                const labelId = `checkbox-list-label-${index}`;
+        <div className="col-sm-3">
+          <div className="sticky-top" style={{ paddingTop: '70px' }}>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <div className="list-group">
+              <List
+                sx={{
+                  width: "100%",
+                  bgcolor: "background.paper",
+                }}
+              >
+                {categories.map((category, index) => {
+                  const labelId = `checkbox-list-label-${index}`;
 
-                return (
-                  <ListItem key={index} disablePadding>
-                    <ListItemButton
-                      role={undefined}
-                      onClick={handleToggle(index)}
-                      dense
-                    >
-                      <ListItemIcon>
-                        <Checkbox
-                          edge="start"
-                          checked={checked.indexOf(index) !== -1}
-                          tabIndex={-1}
-                          disableRipple
-                          inputProps={{ "aria-labelledby": labelId }}
+                  return (
+                    <ListItem key={index} disablePadding>
+                      <ListItemButton
+                        role={undefined}
+                        onClick={handleToggle(index)}
+                        dense
+                      >
+                        <ListItemIcon>
+                          <Checkbox
+                            edge="start"
+                            checked={checked.indexOf(index) !== -1}
+                            tabIndex={-1}
+                            disableRipple
+                            inputProps={{ "aria-labelledby": labelId }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          id={labelId}
+                          primary={`${category.name} (${
+                            products.filter((it) =>
+                              category.products.includes(it.id)
+                            ).length
+                          })`}
                         />
-                      </ListItemIcon>
-                      <ListItemText id={labelId} primary={category.name} />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
-            </List>
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </div>
           </div>
         </div>
         <div className="col col-lg-6">
@@ -145,9 +154,7 @@ const Search = ({ categories }) => {
             const lcSearch = search.toLowerCase();
             const filters =
               (product.name.toLowerCase().includes(lcSearch) ||
-                product.description
-                  .toLowerCase()
-                  .includes(lcSearch) ||
+                product.description.toLowerCase().includes(lcSearch) ||
                 product.address.country.toLowerCase().includes(lcSearch) ||
                 product.address.city.toLowerCase().includes(lcSearch)) &&
               (checked.length == 0 ||
@@ -161,7 +168,9 @@ const Search = ({ categories }) => {
                 onSelectItem={(product) => onSelectItem(product)}
                 key={product.id}
               />
-            ) : ( loading && <HomeLoader key={product.id} />);
+            ) : (
+              loading && <HomeLoader key={product.id} />
+            );
           })}
         </div>
       </div>
