@@ -64,6 +64,10 @@ public class CategoryService {
         webSocketService.sendMessage("updateCategory", List.of(category.getId()));
     }
 
+    public Optional<Category> getCategoryByName(String name) {
+        return Optional.ofNullable(categoryRepository.findByName(name));
+    }
+
     public void deleteCategory(ObjectId id) {
         categoryRepository.deleteById(id);
     }

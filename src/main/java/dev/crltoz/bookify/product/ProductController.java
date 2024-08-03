@@ -70,6 +70,29 @@ public class ProductController {
             return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
         }
 
+        // if query only has one word, check if is a category
+        if (queries.length == 1) {
+            Category category = categoryService.getCategoryByName(queries[0]).orElse(null);
+            if (category != null) {
+                List<Product> products = Collections.emptyList();
+
+                for (String productId : category.getProducts()) {
+                    Optional<Product> product = productService.getProductById(new ObjectId(productId));
+                    if (product.isPresent()) {
+                        if (products.isEmpty()) {
+                            products = new ArrayList<>();
+                        }
+                        products.add(product.get());
+                    }
+                }
+
+                if (products.isEmpty()) {
+                    return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
+                }
+                return new ResponseEntity<>(products, HttpStatus.OK);
+            }
+        }
+
         // add the first query to the rest of the queries if there are less than 3
         while (queries.length < 3) {
             queries = Arrays.copyOf(queries, queries.length + 1);

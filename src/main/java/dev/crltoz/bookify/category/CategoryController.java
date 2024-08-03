@@ -42,7 +42,8 @@ public class CategoryController {
         }
 
         // check if exists category with same name
-        if (categoryService.getAllCategories().stream().anyMatch(c -> c.getName().equalsIgnoreCase(category.getName()))) {
+        Category existingCategory = categoryService.getCategoryByName(category.getName()).orElse(null);
+        if (existingCategory != null) {
             return new ResponseEntity<>("null", HttpStatus.CONFLICT);
         }
 
