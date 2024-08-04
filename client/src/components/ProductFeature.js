@@ -3,7 +3,7 @@ import IconPicker from "./IconPicker";
 
 const ProductFeature = ({ icon, name, onChangeIcon, onChangeName }) => {
   return (
-    <div className="container-fluid">
+    <div className="container">
       <div className="row">
         <div className="col col-lg-6">
           <IconPicker

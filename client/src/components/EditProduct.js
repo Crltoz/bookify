@@ -146,7 +146,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
 
   return (
     <>
-      <DialogText text={dialogText} onClose={onCloseDialogText} />
+      <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
       <Dialog
         open={open}
         onClose={() => handleClose()}

@@ -135,7 +135,7 @@ const AdminListCategories = () => {
         confirmDelete={confirmDelete}
         cancelDelete={() => setSelectedDeleteCategory(null)}
       />
-      <DialogText text={dialogText} onClose={() => setDialogText("")} />
+      <DialogText text={dialogText} onClose={() => setDialogText("")} onConfirm={() => setDialogText("")} />
       <div className="d-flex flex-column w-100">
         <div className="row w-100">
           {categories.map((category, index) => (

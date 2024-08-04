@@ -124,7 +124,7 @@ const Register = () => {
   return (
     <div>
       <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary">
-        <DialogText text={dialogText} onClose={handleDialogClose} />
+        <DialogText text={dialogText} onClose={handleDialogClose} onConfirm={handleDialogClose} />
         <div
           className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"
           style={{ width: "100%", maxWidth: "400px" }}

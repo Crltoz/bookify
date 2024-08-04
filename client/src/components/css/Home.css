@@ -2,7 +2,6 @@
     padding: 20px 0;
     background-color: #2C3E50;
     color: #ECF0F1;
-    padding-top: 5vw;
 }
 
 .header-bottom h1 {
@@ -32,18 +31,6 @@
     font-weight: 400;
 }
 
-@media (min-width: 1920px) {
-    .recommendations {
-        margin-left: 15%;
-        margin-right: 15%;
-    }
-
-    .categories {
-        margin-left: 25%;
-        margin-right: 25%;
-    }
-}
-
 @media (max-width: 1199px) {
     .header-bottom h1 {
         font-size: 1.75rem;
@@ -67,10 +54,6 @@
         font-size: 1.5rem;
     }
 
-    .header-bottom {
-        padding-top: 22vw;
-    }
-
     .search-bar {
         flex-direction: column;
         width: 100%;
@@ -83,18 +66,6 @@
 
     .search-bar .btn.search-button {
         width: 60%;
-    }
-}
-
-@media (max-width: 575px) {
-    .header-bottom {
-        padding-top: 50vw !important;
-    }
-}
-
-@media (max-width: 320px) {
-    .header-bottom {
-        padding-top: 60vw !important;
     }
 }
 

@@ -7,12 +7,14 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
-import "./css/Search.css";
 import { subscribe, unsubscribe } from "../events";
 import HomeLoader from "./HomeLoader";
 
 const query = new URLSearchParams(window.location.search).get("query");
 const wishlist = new URLSearchParams(window.location.search).get("wishlist");
+const from = new URLSearchParams(window.location.search).get("from");
+const to = new URLSearchParams(window.location.search).get("to");
+const logged = window.localStorage.getItem("token");
 
 const Search = ({ categories }) => {
   const [search, setSearch] = useState("");
@@ -20,6 +22,8 @@ const Search = ({ categories }) => {
   const [loading, setLoading] = useState(true);
   const productRef = useRef(products);
   const [checked, setChecked] = React.useState([]);
+
+  const mainClass = logged ? " margin-logged" : " margin-not-logged";
 
   useEffect(() => {
     getProducts();
@@ -47,7 +51,6 @@ const Search = ({ categories }) => {
     getProducts();
   };
 
-
   const handleToggle = (value) => () => {
     const currentIndex = checked.indexOf(value);
     const newChecked = [...checked];
@@ -63,9 +66,12 @@ const Search = ({ categories }) => {
 
   const getProducts = async () => {
     try {
-      const endpoint = wishlist ? "/products/wishlist" : "/products/search?query=" + query;
+      const endpoint = wishlist
+        ? "/products/wishlist"
+        : "/products/search?query=" + query;
       const response = await axios.get(endpoint);
       setProducts(response.data);
+      
       setTimeout(() => {
         setLoading(false);
       }, 1000);
@@ -99,20 +105,22 @@ const Search = ({ categories }) => {
   };
 
   const onSelectItem = (product) => {
-    window.location.href = `/product?id=${product.id}`;
+    const productId = `/product?id=${product.id}`;
+    const date = from && to ? `&from=${from}&to=${to}` : "";
+    window.location.href = productId + date;
   };
 
   return (
-    <div className="container-fluid search min-vh-100">
-      <div className="row d-flex justify-content-center">
-        <h1>{ wishlist ? "Favoritos" : "Búsqueda" }</h1>
+    <div className="container min-vh-100">
+      <div className={"row d-flex justify-content-center margin-not-logged" + mainClass }>
+        <h1>{wishlist ? "Favoritos" : "Búsqueda"}</h1>
         <hr></hr>
-        <div className="col-sm-3">
-          <div className="sticky-top" style={{ paddingTop: '70px' }}>
+        <div className="col-sm-4">
+          <div className="sticky-top" style={{ paddingTop: "50px" }}>
             <input
               type="text"
               className="form-control"
-              placeholder="Search"
+              placeholder="Filtrar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -176,6 +184,8 @@ const Search = ({ categories }) => {
                 product={product}
                 onSelectItem={(product) => onSelectItem(product)}
                 key={product.id}
+                from={from}
+                to={to}
               />
             ) : (
               loading && <HomeLoader key={product.id} />

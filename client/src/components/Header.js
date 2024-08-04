@@ -62,7 +62,7 @@ const Header = ({ user }) => {
 
   return (
     <header className="header fixed-top">
-      <div className="header-top container-fluid">
+      <div className="header-top container">
         <div className="d-flex justify-content-between align-items-center px-3 pt-2 pb-1">
           <div className="logo d-flex align-items-center">
             <a href="/">

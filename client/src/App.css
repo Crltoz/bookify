@@ -51,3 +51,31 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.margin-not-logged {
+  margin-top: 8% !important;
+}
+
+.margin-logged {
+  margin-top: 6% !important;
+}
+
+@media (max-width: 884px) {
+  .margin-not-logged {
+    margin-top: 28% !important;
+  }
+
+  .margin-logged {
+    margin-top: 10% !important;
+  }
+}
+
+@media (max-width: 428px) {
+  .margin-not-logged {
+    margin-top: 55% !important;
+  }
+
+  .margin-logged {
+    margin-top: 20% !important;
+  }
+}

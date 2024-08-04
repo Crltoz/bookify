@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
+  faCalendar,
   faCirclePlus,
   faList,
   faPhotoFilm,
@@ -21,9 +22,11 @@ import DialogCarousel from "./DialogCarousel";
 import { Icon } from "@mui/material";
 import axios from "axios";
 import { subscribe, unsubscribe } from "../events";
-import Loading from "../Loading";
-import ProductInfoLoader from "./ProductInfoLoader";
 import Share from "./Share";
+import HomeLoader from "./HomeLoader";
+import DialogText from "./DialogText";
+import DatePicker from "./DatePicker";
+import { jwtDecode } from "jwt-decode";
 
 function srcset(image) {
   return {
@@ -37,6 +40,23 @@ function getProductId() {
   return new URLSearchParams(window.location.search).get("id");
 }
 
+function isLogged() {
+  return localStorage.getItem("token") != null;
+}
+
+function getUserId() {
+  const token = window.localStorage.getItem("token");
+  try {
+    const decodedObj = jwtDecode(token);
+    return decodedObj.id;
+  } catch (e) {
+    return null;
+  }
+}
+
+const from = new URLSearchParams(window.location.search).get("from");
+const to = new URLSearchParams(window.location.search).get("to");
+
 export default function ProductInfo() {
   const [images, setImages] = React.useState([]);
   const [index, setIndex] = React.useState(-1);
@@ -45,6 +65,13 @@ export default function ProductInfo() {
   const [loading, setLoading] = React.useState(true);
   const [openShare, setOpenShare] = React.useState(false);
   const [wishlist, setWishlist] = React.useState([]);
+  const [openText, setOpenText] = React.useState("");
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [dateSelected, setDateSelected] = React.useState({
+    startDate: from,
+    endDate: to,
+  });
+  const [disabledDates, setDisabledDates] = React.useState([]);
 
   const onClose = () => {
     // close the dialog, go back to the previous page in location
@@ -64,6 +91,7 @@ export default function ProductInfo() {
       }
 
       setProduct(response.data);
+      updateDisabledDates();
       setTimeout(() => {
         // extra time to load images
         setLoading(false);
@@ -77,19 +105,32 @@ export default function ProductInfo() {
 
     subscribe("updateProduct", updateProductEvent);
     subscribe("deleteProduct", deleteProductEvent);
-    subscribe("updateWishlist", () => {
-      axios.get("/users/wishlist").then((response) => {
-        if (response.status != 200) return;
-        setWishlist(response.data);
-      });
-    });
+    subscribe("updateWishlist", updateWishlistEvent);
+    subscribe("updateReservation", updateReservationEvent);
 
     return () => {
       unsubscribe("updateProduct");
       unsubscribe("deleteProduct");
       unsubscribe("updateWishlist");
+      unsubscribe("updateReservation");
     };
   }, []);
+
+  const updateWishlistEvent = ({ detail }) => {
+    if (!getUserId() || getUserId() != detail) return;
+
+    axios.get("/users/wishlist").then((response) => {
+      if (response.status != 200) return;
+      setWishlist(response.data);
+    });
+  };
+
+  const updateReservationEvent = ({ detail }) => {
+    const productId = getProductId();
+    if (productId === detail[0]) {
+      updateDisabledDates();
+    }
+  };
 
   React.useEffect(() => {
     setImages(product?.images || []);
@@ -101,12 +142,19 @@ export default function ProductInfo() {
   };
 
   const toggleProductWishlist = () => {
+    if (!isLogged()) {
+      setOpenText(
+        "Inicia sesión o registrate para añadir productos a tus favoritos."
+      );
+      return;
+    }
+
     const productId = getProductId();
 
     if (wishlist.find((it) => it == productId) != null) {
-      axios.delete(`/users/wishlist/remove/${productId}`)
+      axios.delete(`/users/wishlist/remove/${productId}`);
     } else {
-      axios.post(`/users/wishlist/add/${productId}`)
+      axios.post(`/users/wishlist/add/${productId}`);
     }
   };
 
@@ -117,11 +165,34 @@ export default function ProductInfo() {
         axios.get(`/products/get/${productId}`).then((response) => {
           if (response.status != 200) return;
           setProduct(response.data);
+          updateDisabledDates();
         });
       } catch (e) {
         console.error(e);
       }
     }
+  };
+
+  const updateDisabledDates = () => {
+    axios.get(`/products/reservations/${getProductId()}`).then((response) => {
+      if (response.status != 200) return;
+      for (let reservation of response.data) {
+        // need one date for every day of reservation
+        const start = new Date(reservation.start);
+        const end = new Date(reservation.end);
+
+        // add the dates to the disabled dates
+        setDisabledDates((prev) => [...prev, start]);
+
+        const diff = Math.abs(end - start);
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        for (let i = 1; i < days; i++) {
+          const date = new Date(start + i * 1000 * 60 * 60 * 24);
+          date.setDate(date.getDate() + i);
+          setDisabledDates((prev) => [...prev, date]);
+        }
+      }
+    });
   };
 
   const deleteProductEvent = ({ detail }) => {
@@ -132,8 +203,78 @@ export default function ProductInfo() {
     }
   };
 
+  const showReservation = () => {
+    if (!isLogged()) {
+      setOpenText("Inicia sesión o registrate para reservar.");
+      return;
+    }
+
+    setShowDatePicker(true);
+  };
+
+  const handleSelectedDate = (date) => {
+    if (date[0] && date[0].startDate && date[0].endDate) {
+      const startDate = date[0].startDate.getTime();
+      const endDate = date[0].endDate.getTime();
+      setDateSelected({ startDate: startDate, endDate: endDate });
+      setOpenText(
+        `¿Estás seguro que quieres reservar en las fechas seleccionadas? Son ${
+          (endDate - startDate) / 1000 / 60 / 60 / 24
+        } noches. Check-in: ${new Date(startDate).toLocaleDateString(
+          "es-ES"
+        )} Check-out: ${new Date(endDate).toLocaleDateString("es-ES")}`
+      );
+    }
+    setShowDatePicker(false);
+  };
+
+  const handleConfirmDialog = () => {
+    if (dateSelected.startDate && dateSelected.endDate) {
+      const productId = getProductId();
+      axios
+        .post(`/products/reserve`, {
+          start: dateSelected.startDate,
+          end: dateSelected.endDate,
+          productId: productId,
+        })
+        .then((response) => {
+          switch (response.status) {
+            case 400:
+              setOpenText("La fecha seleccionada no está disponible.");
+              break;
+            case 409:
+              setOpenText("La fecha seleccionada no está disponible.");
+              break;
+            case 404:
+              setOpenText(
+                "Producto no encontrado. Intenta de nuevo más tarde."
+              );
+              break;
+            case 401:
+              setOpenText("Inicia sesión o registrate para reservar.");
+              break;
+            case 200:
+              setOpenText("Reserva realizada correctamente.");
+              break;
+            default:
+              setOpenText("Error al realizar la reserva.");
+              break;
+          }
+        });
+      setDateSelected({});
+      return;
+    }
+    setOpenText("");
+  };
+
   return !loading ? (
     <Dialog fullScreen open={product != null} onClose={onClose}>
+      <DialogText
+        title={"Información"}
+        text={openText}
+        onClose={() => setOpenText("")}
+        onConfirm={handleConfirmDialog}
+      />
       <Share
         open={openShare}
         productId={getProductId()}
@@ -144,6 +285,14 @@ export default function ProductInfo() {
         images={images}
         initialIndex={index}
         handleClose={() => toggleGalery(-1)}
+      />
+      <DatePicker
+        open={showDatePicker}
+        onClose={(date) => handleSelectedDate(date)}
+        onCancel={() => setShowDatePicker(false)}
+        disabledDates={disabledDates}
+        initialStart={dateSelected.startDate}
+        initialEnd={dateSelected.endDate}
       />
       <AppBar sx={{ position: "relative", bgcolor: "#3498DB" }}>
         <Toolbar>
@@ -192,7 +341,13 @@ export default function ProductInfo() {
         </div>
         <div className="d-flex justify-content-end mt-2">
           <button
-            className="btn btn-outline-primary"
+            className="btn btn-primary text-white"
+            onClick={showReservation}
+          >
+            <FontAwesomeIcon icon={faCalendar} /> Reservar
+          </button>
+          <button
+            className="btn btn-outline-primary ms-3"
             onClick={() => toggleGalery(0)}
           >
             <FontAwesomeIcon icon={faCirclePlus} />
@@ -249,8 +404,8 @@ export default function ProductInfo() {
       </div>
     </Dialog>
   ) : (
-    <div className="container-fluid d-flex justify-content-center align-items-start pt-5 mt-5 min-vh-100">
-      <ProductInfoLoader />
+    <div className="container d-flex justify-content-center align-items-start pt-5 mt-5 min-vh-100">
+      <HomeLoader />
     </div>
   );
 }

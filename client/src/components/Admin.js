@@ -8,7 +8,6 @@ import DialogText from "./DialogText";
 import EditCategory from "./EditCategory";
 import AdminListUsers from "./AdminListUsers";
 import AdminListCategories from "./AdminListCategories";
-import { subscribe, unsubscribe } from "../events";
 
 const Admin = ({ user }) => {
   const [showProducts, setShowProducts] = useState(false);
@@ -132,9 +131,9 @@ const Admin = ({ user }) => {
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+    <div className="container d-flex justify-content-center align-items-center min-vh-100">
       <div className="d-none d-lg-flex flex-column align-items-center justify-content-center border rounded shadow-sm p-4 mt-5">
-        <DialogText text={dialogText} onClose={onCloseDialogText} />
+        <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
         <h1>Menú de acciones</h1>
         <div className="d-flex flex-column">
           <div className="row">

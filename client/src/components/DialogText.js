@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function DialogText({ title, text, onClose }) {
+export default function DialogText({ title, text, onConfirm, onClose }) {
   return (
     <Dialog
       open={typeof text === "string" && text.length > 0}
@@ -21,7 +21,7 @@ export default function DialogText({ title, text, onClose }) {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Aceptar</Button>
+        <Button onClick={onConfirm}>Aceptar</Button>
       </DialogActions>
     </Dialog>
   );

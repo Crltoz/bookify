@@ -37,7 +37,7 @@ const ConfirmUser = () => {
   }, []);
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+    <div className="container d-flex justify-content-center align-items-center min-vh-100">
       <DialogText
         text={
           confirmed
@@ -45,6 +45,7 @@ const ConfirmUser = () => {
             : ""
         }
         onClose={handleDialogClose}
+        onConfirm={handleDialogClose}
       />
       {error && (
         <h1 className="text-center">

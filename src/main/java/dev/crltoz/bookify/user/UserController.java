@@ -3,7 +3,10 @@ package dev.crltoz.bookify.user;
 import dev.crltoz.bookify.email.EmailService;
 import dev.crltoz.bookify.product.Product;
 import dev.crltoz.bookify.product.ProductService;
+import dev.crltoz.bookify.reservation.Reservation;
+import dev.crltoz.bookify.reservation.ReservationService;
 import dev.crltoz.bookify.util.JwtUtil;
+import dev.crltoz.bookify.util.UserUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
@@ -50,6 +53,12 @@ public class UserController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserUtil userUtil;
+
+    @Autowired
+    private ReservationService reservationService;
+
     @Value("${env.URL}")
     private String URL;
 
@@ -88,16 +97,7 @@ public class UserController {
 
     @GetMapping("/renovate")
     public ResponseEntity<String> renovateToken(@RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isValidToken(token)) {
-            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        String userId = jwtUtil.getId(token);
-        if (userId == null || !ObjectId.isValid(userId)) {
-            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        User user = userService.getUserById(new ObjectId(userId)).orElse(null);
+        User user = userUtil.getValidUser(token);
         if (user == null) {
             return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
         }
@@ -108,39 +108,19 @@ public class UserController {
 
     @GetMapping("/wishlist")
     public ResponseEntity<List<String>> getWishlist(@RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isValidToken(token)) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
         }
 
-        String userId = jwtUtil.getId(token);
-        if (userId == null || !ObjectId.isValid(userId)) {
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
-        }
-
-        // return 404 if user not found
-        Optional<User> user = userService.getUserById(new ObjectId(userId));
-        if (user.isEmpty()) {
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(user.get().getWishlist(), HttpStatus.OK);
+        return new ResponseEntity<>(user.getWishlist(), HttpStatus.OK);
     }
 
     @PostMapping("/wishlist/add/{id}")
     public ResponseEntity<String> addToWishlist(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isValidToken(token)) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
             return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        String userId = jwtUtil.getId(token);
-        if (userId == null || !ObjectId.isValid(userId)) {
-            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        // return 404 if user not found
-        Optional<User> user = userService.getUserById(new ObjectId(userId));
-        if (user.isEmpty()) {
-            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
         }
 
         // return 404 if product not found
@@ -149,42 +129,32 @@ public class UserController {
             return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
         }
 
-        if (user.get().getWishlist().contains(product.get().getId())) {
+        if (user.getWishlist().contains(product.get().getId())) {
             return new ResponseEntity<>("null", HttpStatus.CONFLICT);
         }
 
         // add product to wishlist
-        user.get().getWishlist().add(product.get().getId());
-        userService.save(user.get());
+        user.getWishlist().add(product.get().getId());
+        userService.save(user);
 
         // send webhook to get wishlist
-        webSocketService.sendMessage("updateWishlist", List.of(user.get().getId()));
+        webSocketService.sendMessage("updateWishlist", List.of(user.getId()));
         return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
     @DeleteMapping("/wishlist/remove/{id}")
     public ResponseEntity<String> removeFromWishlist(@PathVariable ObjectId id, @RequestHeader("Authorization") String token) {
-        if (!jwtUtil.isValidToken(token)) {
+       User user = userUtil.getValidUser(token);
+        if (user == null) {
             return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        String userId = jwtUtil.getId(token);
-        if (userId == null || !ObjectId.isValid(userId)) {
-            return new ResponseEntity<>("null", HttpStatus.UNAUTHORIZED);
-        }
-
-        // return 404 if user not found
-        Optional<User> user = userService.getUserById(new ObjectId(userId));
-        if (user.isEmpty()) {
-            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
         }
 
         // remove product from wishlist
-        user.get().getWishlist().remove(id.toString());
-        userService.save(user.get());
+        user.getWishlist().remove(id.toString());
+        userService.save(user);
 
         // send webhook to get wishlist
-        webSocketService.sendMessage("updateWishlist", List.of(user.get().getId()));
+        webSocketService.sendMessage("updateWishlist", List.of(user.getId()));
         return new ResponseEntity<>("null", HttpStatus.OK);
     }
 
@@ -419,6 +389,16 @@ public class UserController {
         // send event to all clients to update jwt from this user
         webSocketService.sendMessage("updateUser", List.of(userToUpdate.getId()));
         return new ResponseEntity<>("null", HttpStatus.OK);
+    }
+
+    @GetMapping("/reservations")
+    public ResponseEntity<List<Reservation>> getReservations(@RequestHeader("Authorization") String token) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(reservationService.getReservationsByUserId(user.getId()), HttpStatus.OK);
     }
 
     private String getClientIp(HttpServletRequest request) {

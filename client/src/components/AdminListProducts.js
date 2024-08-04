@@ -161,7 +161,7 @@ const AdminListProducts = () => {
         onConfirm={confirmEdit}
         onCancel={cancelEdit}
       />
-      <DialogText text={dialogText} onClose={onCloseDialogText} />
+      <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
       <hr></hr>
       <div className="d-flex flex-column w-100 mt-5">
         <h1>Productos</h1>

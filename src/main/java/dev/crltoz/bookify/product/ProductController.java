@@ -2,9 +2,14 @@ package dev.crltoz.bookify.product;
 
 import dev.crltoz.bookify.category.Category;
 import dev.crltoz.bookify.category.CategoryService;
+import dev.crltoz.bookify.email.EmailService;
+import dev.crltoz.bookify.reservation.Reservation;
+import dev.crltoz.bookify.reservation.ReservationProjection;
+import dev.crltoz.bookify.reservation.ReservationService;
 import dev.crltoz.bookify.user.User;
 import dev.crltoz.bookify.user.UserService;
 import dev.crltoz.bookify.util.JwtUtil;
+import dev.crltoz.bookify.util.UserUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -14,6 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -34,6 +42,15 @@ public class ProductController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private UserUtil userUtil;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @GetMapping
     public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
@@ -114,20 +131,9 @@ public class ProductController {
 
     @GetMapping("/wishlist")
     public ResponseEntity<List<Product>> getWishlist(@RequestHeader("Authorization") String token) {
-        // check if is admin
-        if (!jwtUtil.isValidToken(token)) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        }
-
-        // get user from token
-        String userId = jwtUtil.getId(token);
-        if (userId == null || !ObjectId.isValid(userId)) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        }
-
-        User user = userService.getUserById(new ObjectId(userId)).orElse(null);
+        User user = userUtil.getValidUser(token);
         if (user == null) {
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
         }
 
         List<String> productIds = user.getWishlist();
@@ -140,7 +146,7 @@ public class ProductController {
             Optional<Product> product = productService.getProductById(new ObjectId(productId));
             product.ifPresent(products::add);
         }
-        
+
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
@@ -288,5 +294,82 @@ public class ProductController {
         // send websocket message
         webSocketService.sendMessage("updateProduct", List.of(id.toString()));
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    }
+
+    @PostMapping("/reserve")
+    public ResponseEntity<Product> addReservation(@RequestBody ReservationRequest reservationRequest, @RequestHeader("Authorization") String token) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        // return 404 if product not found
+        Product product = productService.getProductById(reservationRequest.getProductId()).orElse(null);
+        if (product == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        // check if reservation is valid
+        if (reservationRequest.getStart() >= reservationRequest.getEnd()) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+
+        // check if reservation is already taken
+        List<Reservation> reservations = reservationService.getReservationsByProductId(product.getId());
+        for (Reservation reservation : reservations) {
+            if (reservationRequest.getStart() < reservation.getEnd() && reservationRequest.getEnd() > reservation.getStart()) {
+                return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            }
+        }
+
+        // add reservation and modify start and end to set startTime always at 2 P.M and endTime always at 11 A.M
+        Long start = setStartOrEndTime(reservationRequest.getStart(), true);
+        Long end = setStartOrEndTime(reservationRequest.getEnd(), false);
+        Reservation reservation = new Reservation(user.getId(), product.getId(), start, end);
+        reservationService.save(reservation);
+
+        // send email to user
+        String emailTemplate = emailService.getTemplate("reservation");
+        emailTemplate = emailTemplate.replace("${name}", user.getFirstName());
+        emailTemplate = emailTemplate.replace("${productName}", product.getName());
+        long nights = (reservation.getEnd() - reservation.getStart()) / 86400000;
+        emailTemplate = emailTemplate.replace("${nights}", "" + (nights + 1));
+
+        // send date in spain format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"));
+        LocalDateTime startDateTime = LocalDateTime.ofInstant(new Date(start).toInstant(), ZoneId.systemDefault());
+        LocalDateTime endDateTime = LocalDateTime.ofInstant(new Date(end).toInstant(), ZoneId.systemDefault());
+        String formattedStartDate = startDateTime.format(formatter);
+        String formattedEndDate = endDateTime.format(formatter);
+
+        emailTemplate = emailTemplate.replace("${startDate}", formattedStartDate);
+        emailTemplate = emailTemplate.replace("${endDate}", formattedEndDate);
+        emailService.sendEmail(user.getEmail(), "Reserva confirmada: " + product.getName(), emailTemplate);
+
+        // send websocket message
+        webSocketService.sendMessage("updateReservation", List.of(product.getId(), user.getId()));
+        return new ResponseEntity<>(product, HttpStatus.OK);
+    }
+
+    @GetMapping("/reservations/{id}")
+    public ResponseEntity<List<ReservationProjection>> getReservations(@PathVariable ObjectId id) {
+        return new ResponseEntity<>(reservationService.getReservationsByProductIdProjection(id.toString()), HttpStatus.OK);
+    }
+
+    private Long setStartOrEndTime(Long date, boolean isStart) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(date);
+        if (isStart) {
+            calendar.set(Calendar.HOUR_OF_DAY, 14);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+        } else {
+            calendar.set(Calendar.HOUR_OF_DAY, 11);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+        }
+        return calendar.getTimeInMillis();
     }
 }

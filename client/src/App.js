@@ -14,7 +14,8 @@ import Search from "./components/Search";
 import ConfirmUser from "./components/ConfirmUser";
 import { publish } from "./events";
 import ProductInfo from "./components/ProductInfo";
-import Loading from "./Loading";
+import Loading from "./components/Loading";
+import Reservations from "./components/Reservations";
 
 axios.defaults.baseURL = "https://bookify.website/api";
 
@@ -233,6 +234,10 @@ function App() {
         publish("updateWishlist", args[0]);
         break;
       }
+      case "updateReservation": {
+        publish("updateReservation", [args[0], args[1]]);
+        break;
+      }
       default:
         console.log("Unknown event type: ", event);
     }
@@ -293,6 +298,9 @@ function App() {
             </Route>
             <Route path="/product" element={<Layout user={user} />}>
               <Route index element={<ProductInfo />} />
+            </Route>
+            <Route path="/reservations" element={<Layout user={user} />}>
+              <Route index element={<Reservations />} />
             </Route>
           </Routes>
         ) : (

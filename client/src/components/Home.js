@@ -15,6 +15,9 @@ import axios from "axios";
 import { Autocomplete, TextField, createFilterOptions } from "@mui/material";
 import { Box } from "@mui/system";
 import CategoryEntry from "./CategoryEntry";
+import DatePicker from "./DatePicker";
+
+const logged = window.localStorage.getItem("token");
 
 const Home = ({ products }) => {
   const [page, setPage] = useState(1);
@@ -23,6 +26,10 @@ const Home = ({ products }) => {
   const [search, setSearch] = useState("");
   const [addresses, setAddresses] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [dateSelected, setDateSelected] = useState({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const mainClass = logged ? " margin-logged" : " margin-not-logged";
 
   const defaultFilterOptions = createFilterOptions();
 
@@ -60,7 +67,11 @@ const Home = ({ products }) => {
   };
 
   const goToSearch = () => {
-    window.location.href = "/search?query=" + search;
+    const query = "?query=" + search
+    const fromDate = dateSelected.startDate ? `&from=${dateSelected.startDate.getTime()}` : "";
+    const toDate = dateSelected.endDate ? `&to=${dateSelected.endDate.getTime()}` : "";
+
+    window.location.href = "/search" + query + fromDate + toDate;
   };
 
   const onSelectItem = (product) => {
@@ -71,13 +82,18 @@ const Home = ({ products }) => {
     window.location.href = `/search?query=${category.name}`;
   }, []);
 
+  const handleSelectedDate = (date) => {
+    if (date[0]) setDateSelected(date[0]);
+    setShowDatePicker(false);
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [page]);
 
   return (
-    <div className="container-fluid min-vh-100">
-      <div className="header-bottom text-center">
+    <div className="container min-vh-100">
+      <div className={"header-bottom text-center margin-not-logged" + mainClass}>
         <h1>Encuentra las mejores ofertas en casas, hoteles y más</h1>
         <div className="search-bar d-flex flex-column flex-lg-row justify-content-center align-items-center">
           <div className="d-flex align-items-center mb-3 mb-lg-0">
@@ -90,19 +106,14 @@ const Home = ({ products }) => {
               options={addresses.map(
                 (address) => `${address.country}, ${address.city}`
               )}
-              value={
-                addresses.find(
-                  (address) =>
-                    address.city.toLowerCase() === search.toLowerCase()
-                ) || ""
-              }
+              value={search}
               noOptionsText="No hay resultados"
               filterOptions={filterOptions}
               onChange={(event, value) => setSearch(value || "")}
               isOptionEqualToValue={(option, value) =>
-                option?.country?.toLowerCase() ===
+                option?.country?.toLowerCase() ==
                   value?.country?.toLowerCase() ||
-                option?.city?.toLowerCase() === value?.city?.toLowerCase()
+                option?.city?.toLowerCase() == value?.city?.toLowerCase()
               }
               renderOption={(props, option) => (
                 <Box
@@ -129,18 +140,36 @@ const Home = ({ products }) => {
                     disabled: true,
                   }}
                   onChange={(event) => setSearch(event.target.value)}
+                  size="small"
                 />
               )}
             />
           </div>
           <div className="d-flex align-items-center mb-3 mb-lg-0">
             <FontAwesomeIcon icon={faCalendarDays} className="me-2" size="lg" />
-            <input
+            <TextField
+              sx={{ width: 300, backgroundColor: "white", borderRadius: "5px" }}
+              id="date"
+              label={dateSelected.startDate != null ? "" : "Check-in - Check-out"}
               type="text"
-              className="form-control me-2"
-              placeholder="Check in - Check out"
+              value={
+                dateSelected.startDate
+                  ? `${dateSelected.startDate.toLocaleDateString("es-ES")} - ${dateSelected.endDate.toLocaleDateString("es-ES")}`
+                  : ""
+              }
+              onClick={() => setShowDatePicker(true)}
+              InputLabelProps={{
+                shrink: false,
+                disabled: true,
+              }}
+              size="small"
             />
           </div>
+          <DatePicker
+            open={showDatePicker}
+            onClose={(date) => handleSelectedDate(date)}
+            onCancel={() => setShowDatePicker(false)}
+          />
           <button
             className="btn btn-primary search-button text-white"
             onClick={goToSearch}

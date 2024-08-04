@@ -17,7 +17,7 @@ export default function EditCategory({ open, onConfirm, onCancel, category }) {
 
   return (
     <>
-      <DialogText text={dialogText} onClose={onCloseDialogText} />
+      <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
       <Dialog
         open={open}
         onClose={onCancel}

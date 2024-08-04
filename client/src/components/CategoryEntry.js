@@ -21,7 +21,10 @@ const CategoryEntry = ({ category, onSelectCategory }) => {
           <p className="card-text">{category.description}</p>
         </div>
         <div className="card-footer">
-          <span><FontAwesomeIcon icon={faBed} /> {category.products.length} disponibles</span>
+          <span>
+            <FontAwesomeIcon className="text-info" icon={faBed} /> {category.products.length}{" "}
+            disponibles
+          </span>
         </div>
       </div>
 
@@ -37,6 +40,12 @@ const CategoryEntry = ({ category, onSelectCategory }) => {
             {category.name}
           </h5>
           <p className="card-text">{category.description}</p>
+        </div>
+        <div className="card-footer">
+          <span>
+            <FontAwesomeIcon className="text-info" icon={faBed} /> {category.products.length}{" "}
+            disponibles
+          </span>
         </div>
       </div>
     </div>
