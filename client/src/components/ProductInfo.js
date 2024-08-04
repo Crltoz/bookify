@@ -73,6 +73,9 @@ export default function ProductInfo() {
   });
   const [disabledDates, setDisabledDates] = React.useState([]);
 
+  const mainClass =
+    getUserId() != null ? " margin-logged" : " margin-not-logged";
+
   const onClose = () => {
     // close the dialog, go back to the previous page in location
     window.history.back();
@@ -268,124 +271,124 @@ export default function ProductInfo() {
   };
 
   return !loading ? (
-    <Dialog fullScreen open={product != null} onClose={onClose}>
-      <DialogText
-        title={"Información"}
-        text={openText}
-        onClose={() => setOpenText("")}
-        onConfirm={handleConfirmDialog}
-      />
-      <Share
-        open={openShare}
-        productId={getProductId()}
-        onClose={() => setOpenShare(false)}
-      />
-      <DialogCarousel
-        open={showGalery}
-        images={images}
-        initialIndex={index}
-        handleClose={() => toggleGalery(-1)}
-      />
-      <DatePicker
-        open={showDatePicker}
-        onClose={(date) => handleSelectedDate(date)}
-        onCancel={() => setShowDatePicker(false)}
-        disabledDates={disabledDates}
-        initialStart={dateSelected.startDate}
-        initialEnd={dateSelected.endDate}
-      />
-      <AppBar sx={{ position: "relative", bgcolor: "#3498DB" }}>
-        <Toolbar>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            {product?.name}
-          </Typography>
-          <Button autoFocus color="inherit" onClick={onClose}>
-            <FontAwesomeIcon icon={faArrowLeft} size="lg" />
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <div className="d-block p-4 bg-secondary">
-        <div className="d-flex justify-content-center align-items-center gap-3 user-select-none">
-          <img
-            className="rounded image-effect main-image"
-            src={images[0] || "https://via.placeholder.com/300"}
-            onClick={() => toggleGalery(0)}
-          />
-          {images.length > 1 && (
-            <ImageList
-              sx={{
-                height: "auto",
-                width: "30%",
-                flexWrap: "nowrap",
-                transform: "translateZ(0)",
-                overflowX: "hidden",
-              }}
-              rowHeight={230}
-              gap={5}
-              variant="masonry"
-              className="d-none d-lg-block"
-            >
-              {images.slice(1, 5).map((image) => (
-                <ImageListItem key={image} rows={1} cols={1}>
-                  <img
-                    className="rounded image-effect"
-                    {...srcset(image)}
-                    alt={product?.name}
-                    loading="lazy"
-                    onClick={() => toggleGalery(images.indexOf(image))}
-                  />
-                </ImageListItem>
-              ))}
-            </ImageList>
-          )}
-        </div>
-        <div className="d-flex justify-content-end mt-2">
-          <button
-            className="btn btn-primary text-white"
-            onClick={showReservation}
-          >
-            <FontAwesomeIcon icon={faCalendar} /> Reservar
-          </button>
-          <button
-            className="btn btn-outline-primary ms-3"
-            onClick={() => toggleGalery(0)}
-          >
-            <FontAwesomeIcon icon={faCirclePlus} />
-            <FontAwesomeIcon icon={faPhotoFilm} className="ms-2" />
-          </button>
-          <button
-            className="btn btn-outline-primary ms-3"
-            onClick={() => setOpenShare(true)}
-          >
-            <FontAwesomeIcon icon={faShare} />
-          </button>
-          <button
-            className="btn btn-outline-danger ms-3"
-            onClick={toggleProductWishlist}
-          >
-            <FontAwesomeIcon
-              icon={
-                wishlist.find((it) => it == product.id)
-                  ? faHeartSolid
-                  : faHeartRegular
-              }
+    <div className="container-fluid min-vh-100 p-0">
+      <div className={mainClass}>
+        <DialogText
+          title={"Información"}
+          text={openText}
+          onClose={() => setOpenText("")}
+          onConfirm={handleConfirmDialog}
+        />
+        <Share
+          open={openShare}
+          productId={getProductId()}
+          onClose={() => setOpenShare(false)}
+        />
+        <DialogCarousel
+          open={showGalery}
+          images={images}
+          initialIndex={index}
+          handleClose={() => toggleGalery(-1)}
+        />
+        <DatePicker
+          open={showDatePicker}
+          onClose={(date) => handleSelectedDate(date)}
+          onCancel={() => setShowDatePicker(false)}
+          disabledDates={disabledDates}
+          initialStart={dateSelected.startDate}
+          initialEnd={dateSelected.endDate}
+        />
+        <AppBar sx={{ position: "relative", bgcolor: "#3498DB" }}>
+          <Toolbar>
+            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+              {product?.name}
+            </Typography>
+            <Button autoFocus color="inherit" onClick={onClose}>
+              <FontAwesomeIcon icon={faArrowLeft} size="lg" />
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <div className="d-block p-4 bg-secondary">
+          <div className="d-flex justify-content-center align-items-center gap-3 user-select-none">
+            <img
+              className="rounded image-effect main-image"
+              src={images[0] || "https://via.placeholder.com/300"}
+              onClick={() => toggleGalery(0)}
             />
-          </button>
+            {images.length > 1 && (
+              <ImageList
+                sx={{
+                  height: "auto",
+                  width: "30%",
+                  flexWrap: "nowrap",
+                  transform: "translateZ(0)",
+                  overflowX: "hidden",
+                }}
+                rowHeight={230}
+                gap={5}
+                variant="masonry"
+                className="d-none d-lg-block"
+              >
+                {images.slice(1, 5).map((image) => (
+                  <ImageListItem key={image} rows={1} cols={1}>
+                    <img
+                      className="rounded image-effect"
+                      {...srcset(image)}
+                      alt={product?.name}
+                      loading="lazy"
+                      onClick={() => toggleGalery(images.indexOf(image))}
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
+          </div>
+          <div className="d-flex justify-content-end mt-2">
+            <button
+              className="btn btn-primary text-white"
+              onClick={showReservation}
+            >
+              <FontAwesomeIcon icon={faCalendar} /> Reservar
+            </button>
+            <button
+              className="btn btn-outline-primary ms-3"
+              onClick={() => toggleGalery(0)}
+            >
+              <FontAwesomeIcon icon={faCirclePlus} />
+              <FontAwesomeIcon icon={faPhotoFilm} className="ms-2" />
+            </button>
+            <button
+              className="btn btn-outline-primary ms-3"
+              onClick={() => setOpenShare(true)}
+            >
+              <FontAwesomeIcon icon={faShare} />
+            </button>
+            <button
+              className="btn btn-outline-danger ms-3"
+              onClick={toggleProductWishlist}
+            >
+              <FontAwesomeIcon
+                icon={
+                  wishlist.find((it) => it == product.id)
+                    ? faHeartSolid
+                    : faHeartRegular
+                }
+              />
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="container d-flex justify-content-center">
-        <div className="w-100">
+        <div className="container">
           <hr></hr>
-          <div className="row m-3 mb-0">
+          <div className="row">
             <h5>
               <FontAwesomeIcon icon={faList} /> Descripción
             </h5>
           </div>
 
-          <div className="row m-4 mb-0 mt-0">{product?.description}</div>
+          <div className="row ms-1">{product?.description}</div>
           <hr></hr>
 
-          <div className="row m-3 mb-0 d-flex">
+          <div className="row">
             <h5>
               <FontAwesomeIcon icon={faCirclePlus} /> Características
             </h5>
@@ -399,10 +402,10 @@ export default function ProductInfo() {
                 </div>
               ))}
           </div>
+          <hr></hr>
         </div>
-        <hr></hr>
       </div>
-    </Dialog>
+    </div>
   ) : (
     <div className="container d-flex justify-content-center align-items-start pt-5 mt-5 min-vh-100">
       <HomeLoader />

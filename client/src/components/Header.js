@@ -179,7 +179,7 @@ const Header = ({ user }) => {
           )}
         </div>
         {!user && (
-          <div className="header-buttons d-lg-none d-lg-flex">
+          <div className="header-buttons d-lg-none d-flex">
             <button
               className="btn btn-secondary create-account"
               onClick={goToRegister}

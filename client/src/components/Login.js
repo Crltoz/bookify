@@ -103,7 +103,7 @@ const Login = ({ isLogged }) => {
 
   return (
     <div>
-      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary mt-5">
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-primary margin-not-logged">
         <DialogText text={dialogText} onClose={() => setDialogText("")} onConfirm={() => setDialogText("")} />
         <div
           className="p-4 border rounded shadow-sm justify-content-center align-items-center bg-white"

@@ -4,7 +4,7 @@ import logo from "../assets/img/bookify-logo-big.webp";
 
 const Footer = () => {
   return (
-    <footer className="container footer">
+    <footer className="container-fluid footer">
       <div className="row lg-2">
         <div className="col d-flex justify-content-start">
           <img src={logo} alt="Bookify" height="30" />

@@ -79,8 +79,8 @@ const Reservations = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center min-vh-100">
-      <div className="d-flex flex-column margin-logged">
+    <div className="container d-flex justify-content-center min-vh-100 margin-logged">
+      <div className="d-flex flex-column">
         <div className="row">
           <h1>Reservas</h1>
         </div>

@@ -17,7 +17,9 @@ import { Box } from "@mui/system";
 import CategoryEntry from "./CategoryEntry";
 import DatePicker from "./DatePicker";
 
-const logged = window.localStorage.getItem("token");
+const isLogged = () => {
+  return window.localStorage.getItem("token") != null;
+}
 
 const Home = ({ products }) => {
   const [page, setPage] = useState(1);
@@ -29,7 +31,8 @@ const Home = ({ products }) => {
   const [dateSelected, setDateSelected] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const mainClass = logged ? " margin-logged" : " margin-not-logged";
+  const mainClass = isLogged() ? "margin-logged" : "margin-not-logged";
+  console.log(mainClass)
 
   const defaultFilterOptions = createFilterOptions();
 
@@ -92,8 +95,8 @@ const Home = ({ products }) => {
   }, [page]);
 
   return (
-    <div className="container min-vh-100">
-      <div className={"header-bottom text-center margin-not-logged" + mainClass}>
+    <div className={"container min-vh-100 " + mainClass}>
+      <div className="header-bottom text-center">
         <h1>Encuentra las mejores ofertas en casas, hoteles y más</h1>
         <div className="search-bar d-flex flex-column flex-lg-row justify-content-center align-items-center">
           <div className="d-flex align-items-center mb-3 mb-lg-0">
