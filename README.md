@@ -49,13 +49,17 @@ que estén desarrollando.
     - Asignación de permiso administrativo, éste es reactivo. Esto quiere decir que si nos asignar administrador estando en la página, se cambiará nuestro JWT y actualizará el menú por el uso de websockets.
     - Modificación de datos (nombre, apellido, contraseña)
     - Email de notificación al cambiar contraseña.
+    - Añadir productos a favoritos.
 - Registro y modificación de productos/categorías.
     - Los administradores podrán crear, modificar y eliminar productos (título, descripción, imágenes, categoría, características)
     - También podrán crear, modificar y eliminar categorías (título, descripción, imagen)
     - Todas las modificaciones/creaciones/eliminaciones (productos y categorías) son reactivos a los usuarios, gracias a los websockets.
     - Compartir productos por redes sociales, también se adjunta imagen, título y descripción en Twitter/Facebook por medio de las cards.
 - Página reactiva a diferentes resoluciones/mobile.
-
+- Búsqueda principal por fecha y lugar.
+    - Autocomplet con las ciudades y países disponibles.
+    - Calendario para seleccionar fechas.
+  
 Más en desarrollo...
 
 # 📷 Media
