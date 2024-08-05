@@ -51,7 +51,7 @@ que estén desarrollando.
     - Email de notificación al cambiar contraseña.
     - Añadir productos a favoritos.
 - Registro y modificación de productos/categorías.
-    - Los administradores podrán crear, modificar y eliminar productos (título, descripción, imágenes, categoría, características)
+    - Los administradores podrán crear, modificar y eliminar productos (título, descripción, imágenes, categoría, características, políticas de uso)
     - También podrán crear, modificar y eliminar categorías (título, descripción, imagen)
     - Todas las modificaciones/creaciones/eliminaciones (productos y categorías) son reactivos a los usuarios, gracias a los websockets.
     - Compartir productos por redes sociales, también se adjunta imagen, título y descripción en Twitter/Facebook por medio de las cards.
@@ -59,8 +59,15 @@ que estén desarrollando.
 - Búsqueda principal por fecha y lugar.
     - Autocomplet con las ciudades y países disponibles.
     - Calendario para seleccionar fechas.
-  
-Más en desarrollo...
+- Reserva de productos
+    - Calendario doble donde se puede seleccionar las fechas para reservar.
+    - Luego de la reserva, se puede realizar una review.
+    - La página principal del producto tiene también las opiniones de los usuarios y sus comentarios.
+    - Valoración general en base a todas las reseñas, además es reactiva a las reseñas que se vayan creando en tiempo real.
+    - Se puede añadir un producto a tu wishlist y acceder a ella desde el menú de usuario.
+    - Botón de Whatsapp para comunicarse directamente con el dueño del producto.
+    - Email de información luego de realizar la reserva satisfactoriamente.
+    - Historial de reservas donde se ordenan por fecha de ingreso (Check-in)
 
 # 📷 Media
 
