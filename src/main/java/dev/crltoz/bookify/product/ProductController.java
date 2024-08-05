@@ -92,6 +92,18 @@ public class ProductController {
 
     @GetMapping("/search")
     public ResponseEntity<List<ProductRatingDTO>> searchProducts(@RequestParam String query) {
+        // check if query has comma, that means that is a country and city
+        if (query.contains(",")) {
+            String[] queries = query.split(",");
+            if (queries.length == 2) {
+                List<Product> products = productService.getProductsByCountryAndCity(queries[0].trim(), queries[1].trim());
+                LOGGER.info("Products found: " + products.size());
+                if (!products.isEmpty()) {
+                    return new ResponseEntity<>(transformProducts(products), HttpStatus.OK);
+                }
+            }
+        }
+
         query = cleanSearchString(query);
 
         // limit to 3 queries
@@ -216,7 +228,8 @@ public class ProductController {
                 productRequest.getFeatures(),
                 productRequest.getAddress(),
                 productRequest.getMapUrl(),
-                productRequest.getPolicies()
+                productRequest.getPolicies(),
+                productRequest.getMapEmbed()
         );
 
         productService.save(product);
@@ -309,7 +322,8 @@ public class ProductController {
                 productRequest.getFeatures(),
                 productRequest.getAddress(),
                 productRequest.getMapUrl(),
-                productRequest.getPolicies()
+                productRequest.getPolicies(),
+                productRequest.getMapEmbed()
         );
         updatedProduct.setId(id.toString());
         productService.save(updatedProduct);

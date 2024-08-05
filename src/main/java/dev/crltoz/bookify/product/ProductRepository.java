@@ -23,6 +23,13 @@ public interface ProductRepository extends MongoRepository<Product, ObjectId> {
     )
     List<Product> findByMultipleQueriesToAddress(String query1, String query2, String query3);
 
+    @Query("{ $and: [ " +
+            "{ 'address.country': { $regex: ?0, $options: 'i' } }, " +
+            "{ 'address.city': { $regex: ?1, $options: 'i' } }, " +
+            "] }"
+    )
+    List<Product> findByCountryCity(String country, String city);
+
     @Query(value = "{}", fields = "{ 'address.country': 1, 'address.city': 1 }")
     Collection<ProductSummary> findAllAddresses();
 }

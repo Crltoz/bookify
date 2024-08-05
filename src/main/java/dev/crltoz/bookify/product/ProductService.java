@@ -32,6 +32,10 @@ public class ProductService {
         return productRepository.findByMultipleQueriesToAddress(query, query2, query3);
     }
 
+    public List<Product> getProductsByCountryAndCity(String country, String city) {
+        return productRepository.findByCountryCity(country, city);
+    }
+
     public HashSet<Address> getAllAddresses() {
         Collection<ProductSummary> products = productRepository.findAllAddresses();
         HashSet<Address> addresses = new HashSet<>();
