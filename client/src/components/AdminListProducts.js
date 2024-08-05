@@ -16,6 +16,7 @@ const AdminListProducts = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get("/products");
+      if (response.status != 200) return;
       setProducts(response.data);
     } catch (error) {
       console.error(error);
@@ -47,6 +48,7 @@ const AdminListProducts = () => {
     try {
       const productId = detail;
       const response = await axios.get(`/products/get/${productId}`);
+      if (response.status != 200) return;
       const product = response.data;
       if (!product) return;
 

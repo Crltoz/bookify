@@ -112,6 +112,7 @@ function App() {
   const getProducts = async () => {
     try {
       const response = await axios.get("/products/home");
+      if (response.status != 200) return;
       setProducts(response.data);
     } catch (e) {
       console.error(e);
@@ -121,6 +122,7 @@ function App() {
   const getCategories = async () => {
     try {
       const response = await axios.get("/categories");
+      if (response.status != 200) return;
       setCategories(response.data);
     } catch (e) {
       console.error(e);
@@ -250,6 +252,8 @@ function App() {
   const updateProductEvent = async (productId) => {
     try {
       const response = await axios.get(`/products/get/${productId}`);
+      if (response.status != 200) return;
+      
       const product = response.data;
       const newProducts = [...productRef.current];
       const index = newProducts.findIndex((it) => it.id == productId);

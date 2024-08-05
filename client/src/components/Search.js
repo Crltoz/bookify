@@ -70,6 +70,8 @@ const Search = ({ categories }) => {
         ? "/products/wishlist"
         : "/products/search?query=" + query;
       const response = await axios.get(endpoint);
+      if (response.status != 200) return;
+
       setProducts(response.data);
       
       setTimeout(() => {
@@ -90,6 +92,7 @@ const Search = ({ categories }) => {
     try {
       const productId = detail;
       const response = await axios.get(`/products/get/${productId}`);
+      if (response.status != 200) return;
       const product = response.data;
       if (!product) return;
 
