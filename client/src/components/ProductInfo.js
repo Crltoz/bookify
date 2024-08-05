@@ -30,6 +30,7 @@ import DialogText from "./DialogText";
 import DatePicker from "./DatePicker";
 import { jwtDecode } from "jwt-decode";
 import ReviewSmall from "./ReviewSmall";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 function srcset(image) {
   return {
@@ -337,7 +338,9 @@ export default function ProductInfo() {
               setOpenText("Inicia sesión o registrate para reservar.");
               break;
             case 200:
-              setOpenText("Reserva realizada correctamente. Toda la información ha sido enviada a su correo electrónico.");
+              setOpenText(
+                "Reserva realizada correctamente. Toda la información ha sido enviada a su correo electrónico."
+              );
               break;
             default:
               setOpenText("Error al realizar la reserva.");
@@ -367,6 +370,15 @@ export default function ProductInfo() {
       sum += review.rating;
     }
     return sum / reviews.length;
+  };
+
+  const handleWhatsapp = () => {
+    const phoneNumber = "14155238886"; // twilio number, to test
+    const message = `Hola, estoy interesado en el producto ${product?.name || ""} que he visto en Bookify. ¿Podrías darme más información?`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   return !loading ? (
@@ -474,6 +486,12 @@ export default function ProductInfo() {
                     : faHeartRegular
                 }
               />
+            </button>
+            <button
+              className="btn btn-outline-success ms-3"
+              onClick={handleWhatsapp}
+            >
+              <FontAwesomeIcon icon={faWhatsapp} />
             </button>
           </div>
         </div>
