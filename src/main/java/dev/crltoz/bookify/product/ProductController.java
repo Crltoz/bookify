@@ -350,17 +350,18 @@ public class ProductController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
 
+        // modify start and end to set startTime always at 2 P.M and endTime always at 11 A.M
+        Long start = setStartOrEndTime(reservationRequest.getStart(), true);
+        Long end = setStartOrEndTime(reservationRequest.getEnd(), false);
+
         // check if reservation is already taken
         List<Reservation> reservations = reservationService.getReservationsByProductId(product.getId());
         for (Reservation reservation : reservations) {
-            if (reservationRequest.getStart() < reservation.getEnd() && reservationRequest.getEnd() > reservation.getStart()) {
+            if (start < reservation.getEnd() && end > reservation.getStart()) {
                 return new ResponseEntity<>(null, HttpStatus.CONFLICT);
             }
         }
 
-        // add reservation and modify start and end to set startTime always at 2 P.M and endTime always at 11 A.M
-        Long start = setStartOrEndTime(reservationRequest.getStart(), true);
-        Long end = setStartOrEndTime(reservationRequest.getEnd(), false);
         Reservation reservation = new Reservation(user.getId(), product.getId(), start, end);
         reservationService.save(reservation);
 
