@@ -96,8 +96,14 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}
           </h5>
-          <p className="card-text">{product.description.slice(0, 325)}{product.description.length > 320 && ("...")} </p>
-          <button onClick={() => openMap(product.mapUrl)} className="btn btn-outline-success">
+          <p className="card-text">
+            {product.description.slice(0, 325)}
+            {product.description.length > 320 && "..."}{" "}
+          </p>
+          <button
+            onClick={() => openMap(product.mapUrl)}
+            className="btn btn-outline-success"
+          >
             <FontAwesomeIcon icon={faLocationPin} className="me-2" />
             {product.address.country + ", " + product.address.city}
           </button>
@@ -128,11 +134,27 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}
           </h5>
-          <p className="card-text">{product.description.slice(0, 325)}{product.description.length > 320 && ("...")}</p>
-          <button onClick={() => openMap(product.mapUrl)} className="btn btn-outline-success">
+          <p className="card-text">
+            {product.description.slice(0, 325)}
+            {product.description.length > 320 && "..."}
+          </p>
+          <button
+            onClick={() => openMap(product.mapUrl)}
+            className="btn btn-outline-success"
+          >
             <FontAwesomeIcon icon={faLocationPin} className="me-2" />
             {product.address.country + ", " + product.address.city}
           </button>
+          {from && to && (
+            // lower font size
+            <div className="small mt-3">
+              Disponible en las fechas seleccionadas:{" "}
+              <FontAwesomeIcon
+                className={checkAvailable() ? "text-success" : "text-danger"}
+                icon={checkAvailable() ? faCircleCheck : faCircleXmark}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
