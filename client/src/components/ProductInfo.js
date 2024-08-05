@@ -74,6 +74,8 @@ export default function ProductInfo() {
   const [reviews, setReviews] = React.useState([]);
   const [reviewers, setReviewers] = React.useState({});
   const reviewersRef = React.useRef(reviewers);
+  const [redirectLogin, setRedirectLogin] = React.useState(false);
+  const redirectLoginRef = React.useRef(redirectLogin);
 
   const mainClass =
     getUserId() != null ? " margin-logged" : " margin-not-logged";
@@ -128,6 +130,10 @@ export default function ProductInfo() {
   React.useEffect(() => {
     reviewersRef.current = reviewers;
   }, [reviewers]);
+
+  React.useEffect(() => {
+    redirectLoginRef.current = redirectLogin;
+  }, [redirectLogin]);
 
   const updateWishlistEvent = ({ detail }) => {
     if (!getUserId() || getUserId() != detail) return;
@@ -193,6 +199,7 @@ export default function ProductInfo() {
 
   const toggleProductWishlist = () => {
     if (!getUserId()) {
+      setRedirectLogin(true);
       setOpenText(
         "Inicia sesión o registrate para añadir productos a tus favoritos."
       );
@@ -255,6 +262,7 @@ export default function ProductInfo() {
 
   const showReservation = () => {
     if (!getUserId()) {
+      setRedirectLogin(true);
       setOpenText("Inicia sesión o registrate para reservar.");
       return;
     }
@@ -279,7 +287,13 @@ export default function ProductInfo() {
   };
 
   const handleConfirmDialog = () => {
-    if (dateSelected.startDate && dateSelected.endDate && getUserId()) {
+    if (redirectLoginRef.current) {
+      setOpenText("");
+      window.location.href = "/login";
+      return;
+    }
+
+    if (dateSelected.startDate && dateSelected.endDate) {
       const productId = getProductId();
       axios
         .post(`/products/reserve`, {
@@ -301,6 +315,7 @@ export default function ProductInfo() {
               );
               break;
             case 401:
+              setRedirectLogin(true);
               setOpenText("Inicia sesión o registrate para reservar.");
               break;
             case 200:
@@ -315,6 +330,14 @@ export default function ProductInfo() {
       return;
     }
     setOpenText("");
+  };
+
+  const handleCloseDialog = () => {
+    setOpenText("");
+    if (redirectLoginRef.current) {
+      window.location.href = "/login";
+      return;
+    }
   };
 
   const calculateRating = () => {
@@ -332,7 +355,7 @@ export default function ProductInfo() {
         <DialogText
           title={"Información"}
           text={openText}
-          onClose={() => setOpenText("")}
+          onClose={handleCloseDialog}
           onConfirm={handleConfirmDialog}
         />
         <Share
