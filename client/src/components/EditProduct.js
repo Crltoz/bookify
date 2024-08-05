@@ -11,16 +11,26 @@ import axios from "axios";
 import { Autocomplete } from "@mui/material";
 import ProductFeature from "./ProductFeature";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRight,
+  faCirclePlus,
+  faCircleXmark,
+  faList,
+  faListCheck,
+  faLock,
+  faMapMarker,
+  faPhotoVideo,
+} from "@fortawesome/free-solid-svg-icons";
 import { subscribe, unsubscribe } from "../events";
+import _ from 'lodash';
 
 export default function EditProduct({ open, onConfirm, onCancel, product }) {
-  const [images, setImages] = React.useState([]);
-  const [features, setFeatures] = React.useState([]);
   const [dialogText, setDialogText] = React.useState("");
   const [categories, setCategories] = React.useState([]);
   let categoriesRef = React.useRef(categories);
   const [categoryName, setCategoryName] = React.useState("");
+  const [editableProduct, setEditableProduct] = React.useState(null);
+  const editableProductRef = React.useRef(editableProduct);
 
   // fetch categories
   React.useEffect(() => {
@@ -34,9 +44,23 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
         console.error(error);
       });
 
-    subscribe("updateCategory", updateOrCreateCategory);
-    subscribe("createCategory", updateOrCreateCategory);
+    subscribe("updateCategory", updateOrCreateCategoryEvent);
+    subscribe("createCategory", updateOrCreateCategoryEvent);
     subscribe("deleteCategory", deleteCategory);
+
+    if (product && product.name) {
+      setEditableProduct(_.cloneDeep(product));
+    } else {
+      // set default product
+      setEditableProduct({
+        name: "",
+        description: "",
+        address: { country: "", city: "" },
+        features: [],
+        policies: [],
+        images: [],
+      });
+    }
 
     return () => {
       unsubscribe("updateCategory");
@@ -44,6 +68,10 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
       unsubscribe("deleteCategory");
     };
   }, []);
+
+  React.useEffect(() => {
+    editableProductRef.current = editableProduct;
+  }, [editableProduct]);
 
   React.useEffect(() => {
     categoriesRef.current = categories;
@@ -61,7 +89,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
     setCategories(newCategories);
   };
 
-  const updateOrCreateCategory = async ({ detail }) => {
+  const updateOrCreateCategoryEvent = async ({ detail }) => {
     const categoryId = detail;
     axios
       .get(`/categories/get/${categoryId}`)
@@ -89,47 +117,27 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
   };
 
   const addImage = () => {
-    if (product && product.images) {
-      product.images.push("");
-      setImages([...product.images]);
-    } else {
-      setImages([...images, ""]);
-    }
+    editableProductRef.current.images.push("");
+    setEditableProduct({ ...editableProductRef.current });
   };
 
   const addFeature = () => {
-    if (product && product.features) {
-      product.features.push([
-        "sell f05b",
-        "Caracteristica " + (product.features.length + 1),
-      ]);
-      setFeatures([...product.features]);
-    } else {
-      setFeatures([
-        ...features,
-        ["sell f05b", "Caracteristica " + (features.length + 1)],
-      ]);
-    }
+    editableProductRef.current.features.push([
+      "sell f05b",
+      "Caracteristica " + (editableProduct.features.length + 1),
+    ]);
+    setEditableProduct({ ...editableProductRef.current });
   };
 
   const removeFeature = (index) => {
-    if (product && product.features) {
-      product.features.splice(index, 1);
-      setFeatures([...product.features]);
-    } else {
-      features.splice(index, 1);
-      setFeatures([...features]);
-    }
+    editableProductRef.current.features.splice(index, 1);
+    setEditableProduct({ ...editableProductRef.current });
   };
 
   const changeFeature = (index, subIndex, value) => {
-    if (product && product.features) {
-      product.features[index][subIndex] = value;
-      setFeatures([...product.features]);
-    } else {
-      features[index][subIndex] = value;
-      setFeatures([...features]);
-    }
+    if (!editableProductRef.current) return;
+    editableProductRef.current.features[index][subIndex] = value;
+    setEditableProduct({ ...editableProductRef.current });
   };
 
   const onCloseDialogText = () => {
@@ -137,16 +145,32 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
   };
 
   const handleClose = () => {
-    setImages([]);
-    setFeatures([]);
     setDialogText("");
-    setCategoryName("");
     onCancel();
   };
 
-  return (
+  const removePolicy = (index) => {
+    editableProductRef.current.policies.splice(index, 1);
+    setEditableProduct({ ...editableProductRef.current });
+  };
+
+  const addPolicy = () => {
+    editableProductRef.current.policies.push({ title: "", description: "" });
+    setEditableProduct({ ...editableProductRef.current });
+  };
+
+  const removeLastImage = () => {
+    editableProductRef.current.images.pop();
+    setEditableProduct({ ...editableProductRef.current });
+  };
+
+  return editableProductRef.current && (
     <>
-      <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
+      <DialogText
+        text={dialogText}
+        onClose={onCloseDialogText}
+        onConfirm={onCloseDialogText}
+      />
       <Dialog
         open={open}
         onClose={() => handleClose()}
@@ -154,66 +178,32 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
           component: "form",
           onSubmit: (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const newProduct = Object.fromEntries(formData.entries());
-            newProduct.id = product?.id || "";
-            newProduct.images = [];
-            for (let key of Object.keys(newProduct)) {
-              if (key.startsWith("image-")) {
-                const value = newProduct[key];
-                if (value.startsWith("http")) newProduct.images.push(value);
-                delete newProduct[key];
-              }
-            }
 
-            if (newProduct.images.length === 0) {
-              setDialogText("Debe agregar al menos una imagen.");
-              return;
-            }
-
-            if (newProduct.name.length === 0) {
-              setDialogText("Debe agregar un nombre al producto.");
-              return;
-            }
-
-            if (newProduct.description.length === 0) {
-              setDialogText("Debe agregar una descripción al producto.");
-              return;
-            }
-
-            // set address
-            newProduct.address = {
-              country: newProduct.country,
-              city: newProduct.city,
-            };
-            delete newProduct.country;
-            delete newProduct.city;
-
-            // set features
-            newProduct.features = [];
-            for (let feature of features) {
-              newProduct.features.push(feature);
-            }
-
-            setFeatures([]);
-
-            // get category by name and set id
+            // add category id to product
             const category = categories.find(
-              (it) => it.name == newProduct.categoryName
+              (category) => category.name === categoryName
             );
-            newProduct.categoryId = category?.id || "";
-            delete newProduct.categoryName;
+            if (category) {
+              editableProductRef.current.categoryId = category.id;
+            } else {
+              editableProductRef.current.categoryId = "";
+            }
 
-            onConfirm(newProduct);
+            const product = Object.assign({}, editableProductRef.current);
+            onConfirm(product);
           },
         }}
       >
         <DialogTitle>Manager de Producto</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Aquí puedes seleccionar el nombre, descripción e imágenes del
-            producto.
+            Aquí podrás editar todos los campos del producto seleccionado.
           </DialogContentText>
+
+          <hr></hr>
+          <h5>
+            <FontAwesomeIcon icon={faArrowRight} /> Nombre y descripción
+          </h5>
           <TextField
             autoFocus
             required
@@ -225,9 +215,9 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             fullWidth
             variant="outlined"
             inputProps={{ defaultValue: product?.name || "" }}
+            onChange={(event) => { editableProductRef.current.name = event.target.value; setEditableProduct({...editableProductRef.current}) }}
           />
           <TextField
-            autoFocus
             required
             margin="dense"
             id="description"
@@ -239,7 +229,13 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             maxRows={4}
             variant="outlined"
             inputProps={{ defaultValue: product?.description || "" }}
+            onChange={(event) => { editableProductRef.current.description = event.target.value; setEditableProduct({...editableProductRef.current}) }}
           />
+          <hr></hr>
+
+          <h5 className="mb-4">
+            <FontAwesomeIcon icon={faList} /> Categoría
+          </h5>
           <Autocomplete
             id="categoryName"
             disablePortal
@@ -260,8 +256,13 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
               />
             )}
           />
+          <input type="hidden" name="categoryName" value={categoryName} />
+          <hr></hr>
+
+          <h5>
+            <FontAwesomeIcon icon={faMapMarker} /> Localización
+          </h5>
           <TextField
-            autoFocus
             required
             margin="dense"
             id="country"
@@ -273,9 +274,9 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             maxRows={4}
             variant="outlined"
             inputProps={{ defaultValue: product?.address?.country || "" }}
+            onChange={(event) => { editableProductRef.current.address.country = event.target.value; setEditableProduct({...editableProductRef.current}) }}
           />
           <TextField
-            autoFocus
             required
             margin="dense"
             id="city"
@@ -287,100 +288,129 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             maxRows={4}
             variant="outlined"
             inputProps={{ defaultValue: product?.address?.city || "" }}
+            onChange={(event) => { editableProductRef.current.address.city = event.target.value; setEditableProduct({...editableProductRef.current}) }}
           />
-          <input type="hidden" name="categoryName" value={categoryName} />
-          {product?.features
-            ? product.features.map((feature, featureIndex) => (
-                <div key={featureIndex} className="p-3 mt-2 mb-2 border">
-                  <span>Característica #{featureIndex + 1}</span>
-                  <hr></hr>
-                  <ProductFeature
-                    icon={feature[0]}
-                    name={feature[1]}
-                    onChangeIcon={(value) =>
-                      changeFeature(featureIndex, 0, value)
-                    }
-                    onChangeName={(value) =>
-                      changeFeature(featureIndex, 1, value)
-                    }
-                  />
-                  <Button className="mt-2" color="error" variant="outlined">
-                    <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
-                    <span
-                      className="ms-2"
-                      onClick={() => removeFeature(featureIndex)}
-                    >
-                      Borrar
-                    </span>
-                  </Button>
-                </div>
-              ))
-            : features.map((feature, featureIndex) => (
-                <div key={featureIndex} className="p-3 mt-2 mb-2 border">
-                  <span>Característica #{featureIndex + 1}</span>
-                  <hr></hr>
-                  <ProductFeature
-                    icon={feature[0]}
-                    name={feature[1]}
-                    onChangeIcon={(value) =>
-                      changeFeature(featureIndex, 0, value)
-                    }
-                    onChangeName={(value) =>
-                      changeFeature(featureIndex, 1, value)
-                    }
-                  />
-                  <Button className="mt-2" color="error" variant="outlined">
-                    <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
-                    <span
-                      className="ms-2"
-                      onClick={() => removeFeature(featureIndex)}
-                    >
-                      Borrar
-                    </span>
-                  </Button>
-                </div>
-              ))}
-          {product?.images
-            ? product.images.map((image, index) => (
-                <TextField
-                  key={index}
-                  autoFocus
-                  margin="dense"
-                  id={`image-${index}`}
-                  name={`image-${index}`}
-                  label={`Imagen ${index + 1}`}
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  helperText="URL de la imagen, dejar en blanco para eliminar."
-                  inputProps={{ defaultValue: image }}
-                />
-              ))
-            : images.map((image, index) => (
-                <TextField
-                  key={index}
-                  autoFocus
-                  margin="dense"
-                  id={`image-${index}`}
-                  name={`image-${index}`}
-                  label={`Imagen ${index + 1}`}
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  helperText="URL de la imagen, dejar en blanco para eliminar."
-                  inputProps={{ defaultValue: image }}
-                />
-              ))}
+          <hr></hr>
+
+          <h5>
+            <FontAwesomeIcon icon={faListCheck} /> Características{" "}
+            <Button onClick={addFeature} variant="contained" color="info">
+              <FontAwesomeIcon icon={faCirclePlus} />{" "}
+              <span style={{ marginLeft: "5px" }}>característica</span>
+            </Button>
+          </h5>
+
+          {editableProduct?.features?.map((feature, featureIndex) => (
+            <div key={featureIndex} className="p-3 mt-2 mb-2 border">
+              <span>Característica #{featureIndex + 1}</span>
+              <hr></hr>
+              <ProductFeature
+                icon={feature[0]}
+                name={feature[1]}
+                onChangeIcon={(value) => changeFeature(featureIndex, 0, value)}
+                onChangeName={(value) => changeFeature(featureIndex, 1, value)}
+              />
+              <Button className="mt-2" color="error" variant="outlined">
+                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                <span
+                  className="ms-2"
+                  onClick={() => removeFeature(featureIndex)}
+                >
+                  Borrar
+                </span>
+              </Button>
+            </div>
+          ))}
+          <hr></hr>
+
+          <h5>
+            <FontAwesomeIcon icon={faLock} /> Políticas
+            <Button
+              className="ms-3"
+              onClick={addPolicy}
+              variant="contained"
+              color="info"
+            >
+              <FontAwesomeIcon icon={faCirclePlus} />{" "}
+              <span style={{ marginLeft: "5px" }}>política</span>
+            </Button>
+          </h5>
+          {editableProduct?.policies?.map((policy, policyIndex) => (
+            <div key={policyIndex} className="p-3 mt-2 mb-2 border">
+              <span>Política #{policyIndex + 1}</span>
+              <hr></hr>
+              <TextField
+                key={policyIndex}
+                margin="dense"
+                id={`policy-${policyIndex}`}
+                name={`policy-${policyIndex}`}
+                label={`Título`}
+                type="text"
+                variant="outlined"
+                inputProps={{ defaultValue: policy.title }}
+                onChange={(event) => { editableProductRef.current.policies[policyIndex].title = event.target.value; setEditableProduct({...editableProductRef.current}) }}
+              />
+              <TextField
+                key={policyIndex + 100}
+                margin="dense"
+                id={`policy-${policyIndex + 100}`}
+                name={`policy-${policyIndex + 100}`}
+                label={`Descripción ${policyIndex + 1}`}
+                type="text"
+                variant="outlined"
+                inputProps={{ defaultValue: policy.description }}
+                onChange={(event) => { editableProductRef.current.policies[policyIndex].description = event.target.value; setEditableProduct({...editableProductRef.current}) }}
+                fullWidth
+                multiline
+                maxRows={4}
+              />
+              <Button className="mt-2" color="error" variant="outlined">
+                <FontAwesomeIcon icon={faCircleXmark} color="red" />{" "}
+                <span
+                  className="ms-2"
+                  onClick={() => removePolicy(policyIndex)}
+                >
+                  Borrar
+                </span>
+              </Button>
+            </div>
+          ))}
+
+          <hr></hr>
+          <h5>
+            <FontAwesomeIcon icon={faPhotoVideo} /> Imágenes{" "}
+            <Button
+              className="ms-3"
+              onClick={addImage}
+              variant="contained"
+              color="info"
+            >
+              <FontAwesomeIcon icon={faCirclePlus} />{" "}
+              <span style={{ marginLeft: "5px" }}>imagen</span>
+            </Button>
+            <Button className="ms-2" color="error" variant="contained">
+              <FontAwesomeIcon icon={faCircleXmark} />{" "}
+              <span className="ms-2" onClick={removeLastImage}>
+                Borrar última
+              </span>
+            </Button>
+          </h5>
+          {editableProduct?.images?.map((image, index) => (
+            <TextField
+              key={index}
+              margin="dense"
+              id={`image-${index}`}
+              name={`image-${index}`}
+              label={`Imagen ${index + 1}`}
+              type="text"
+              fullWidth
+              variant="outlined"
+              helperText="URL de la imagen."
+              inputProps={{ defaultValue: image }}
+            />
+          ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={addFeature} variant="contained" color="info">
-            <FontAwesomeIcon icon={faCirclePlus} />{" "}
-            <span style={{ marginLeft: "5px" }}>característica</span>
-          </Button>
-          <Button onClick={addImage} variant="contained" color="info">
-            <FontAwesomeIcon icon={faCirclePlus} />{" "}
-            <span style={{ marginLeft: "5px" }}>imagen</span>
-          </Button>
           <Button
             onClick={() => handleClose()}
             variant="outlined"

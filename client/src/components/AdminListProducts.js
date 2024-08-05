@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import DeleteProduct from "./DeleteProduct";
 import EditProduct from "./EditProduct";
 import DialogText from "./DialogText";
 import { useRef } from "react";
@@ -110,10 +109,11 @@ const AdminListProducts = () => {
     setEditProduct(null);
   };
 
-  const confirmEdit = async (product) => {
+  const confirmEdit = async (editedProduct) => {
     try {
       setEditProduct(null);
-      const edited = await axios.post(`/products/edit`, product);
+      console.log(editedProduct);
+      const edited = await axios.post(`/products/edit`, editedProduct);
       switch (edited.status) {
         case 200: {
           setDialogText("Producto editado correctamente");
@@ -155,16 +155,23 @@ const AdminListProducts = () => {
         confirmDelete={confirmDelete}
         cancelDelete={cancelDelete}
       />
-      <EditProduct
-        open={editProduct != null}
-        product={editProduct}
-        onConfirm={confirmEdit}
-        onCancel={cancelEdit}
+      {editProduct && (
+        <EditProduct
+          open={editProduct != null}
+          product={editProduct}
+          onConfirm={confirmEdit}
+          onCancel={cancelEdit}
+        />
+      )}
+      <DialogText
+        text={dialogText}
+        onClose={onCloseDialogText}
+        onConfirm={onCloseDialogText}
       />
-      <DialogText text={dialogText} onClose={onCloseDialogText} onConfirm={onCloseDialogText} />
       <hr></hr>
       <div className="d-flex flex-column w-100 mt-5">
         <h1>Productos</h1>
+        <hr></hr>
         <div className="row w-100">
           {products.map((product, index) => (
             <div key={index} className="col-12 mb-3">

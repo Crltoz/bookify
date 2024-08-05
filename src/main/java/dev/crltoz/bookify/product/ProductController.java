@@ -194,7 +194,8 @@ public class ProductController {
                 productRequest.getImages(),
                 productRequest.getFeatures(),
                 productRequest.getAddress(),
-                productRequest.getMapUrl()
+                productRequest.getMapUrl(),
+                productRequest.getPolicies()
         );
 
         productService.save(product);
@@ -286,7 +287,8 @@ public class ProductController {
                 productRequest.getImages(),
                 productRequest.getFeatures(),
                 productRequest.getAddress(),
-                productRequest.getMapUrl()
+                productRequest.getMapUrl(),
+                productRequest.getPolicies()
         );
         updatedProduct.setId(id.toString());
         productService.save(updatedProduct);

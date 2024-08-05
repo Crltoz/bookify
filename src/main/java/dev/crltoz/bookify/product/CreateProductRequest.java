@@ -14,4 +14,5 @@ public class CreateProductRequest {
     private List<List<String>> features;
     private Address address;
     private String mapUrl;
+    private List<Policy> policies;
 }

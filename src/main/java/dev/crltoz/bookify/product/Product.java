@@ -31,12 +31,15 @@ public class Product {
 
     private String mapUrl;
 
-    public Product(String name, String description, List<String> images, List<List<String>> features, Address address, String mapUrl) {
+    private List<Policy> policies;
+
+    public Product(String name, String description, List<String> images, List<List<String>> features, Address address, String mapUrl, List<Policy> policies) {
         this.name = name;
         this.description = description;
         this.images = images;
         this.features = features;
         this.address = address;
         this.mapUrl = mapUrl;
+        this.policies = policies;
     }
 }

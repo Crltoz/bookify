@@ -83,6 +83,9 @@ const AdminListUsers = ({ selfUser }) => {
 
   return (
     <div className="container justify-content-center align-items-center">
+      <hr></hr>
+      <h1>Usuarios</h1>
+      <hr></hr>
       <DialogText text={dialogText} onClose={() => setDialogText("")} onConfirm={() => setDialogText("")} />
       <div className="d-flex flex-column w-100">
         <div className="row w-100">

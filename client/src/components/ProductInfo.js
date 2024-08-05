@@ -8,8 +8,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faCalendar,
+  faCircle,
   faCirclePlus,
   faList,
+  faLock,
   faPhotoFilm,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
@@ -399,6 +401,23 @@ export default function ProductInfo() {
                     <Icon color="primary">{feature[0]}</Icon>{" "}
                     <span style={{ marginLeft: "5px" }}>{feature[1]}</span>
                   </div>
+                </div>
+              ))}
+          </div>
+          <hr></hr>
+
+          <div className="row">
+            <h5>
+              <FontAwesomeIcon icon={faLock} /> Políticas
+            </h5>
+            {product?.policies &&
+              product.policies.map((policy, index) => (
+                <div className="col-sm-3 mt-2 mb-2 ms-5 border" key={index}>
+                  <div className="d-flex align-items-center text-secondary">
+                    <FontAwesomeIcon size="xs" icon={faCircle} />
+                    <b style={{ marginLeft: "5px" }}>{policy.title}</b>
+                  </div>
+                  <div className="row ms-3">{policy.description}</div>
                 </div>
               ))}
           </div>

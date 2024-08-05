@@ -122,6 +122,9 @@ const AdminListCategories = () => {
 
   return (
     <div className="container">
+      <hr></hr>
+      <h1>Categorías</h1>
+      <hr></hr>
       <EditCategory
         open={editCategory != null}
         category={editCategory}
