@@ -446,6 +446,8 @@ public class ProductController {
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MILLISECOND, 0);
         }
+        // Convert to UTC
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
         return calendar.getTimeInMillis();
     }
 }

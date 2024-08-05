@@ -70,8 +70,8 @@ const Home = ({ products }) => {
 
   const goToSearch = () => {
     const query = "?query=" + search
-    const fromDate = dateSelected.startDate ? `&from=${dateSelected.startDate.getTime()}` : "";
-    const toDate = dateSelected.endDate ? `&to=${dateSelected.endDate.getTime()}` : "";
+    const fromDate = dateSelected.startDate ? `&from=${dateSelected.startDate.setUTCHours(11, 0, 0)}` : "";
+    const toDate = dateSelected.endDate ? `&to=${dateSelected.endDate.setUTCHours(14, 0, 0)}` : "";
 
     window.location.href = "/search" + query + fromDate + toDate;
   };
