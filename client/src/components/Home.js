@@ -183,6 +183,7 @@ const Home = ({ products }) => {
 
       <div className="categories">
         <h2 className="text-center title mt-5">Categorías</h2>
+        <hr></hr>
         <div className="row justify-content-center">
           {categories.map((category) =>
             !loading ? (
@@ -203,6 +204,7 @@ const Home = ({ products }) => {
 
       <div className="recommendations">
         <h2 className="text-center title mt-5">Recomendaciones</h2>
+        <hr></hr>
         <div className="row justify-content-center">
           {limitedProducts.map((product) =>
             !loading ? (

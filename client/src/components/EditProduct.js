@@ -67,7 +67,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
       unsubscribe("createCategory");
       unsubscribe("deleteCategory");
     };
-  }, []);
+  }, [open]);
 
   React.useEffect(() => {
     editableProductRef.current = editableProduct;
@@ -180,9 +180,10 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             event.preventDefault();
 
             // add category id to product
-            const category = categories.find(
-              (category) => category.name === categoryName
+            const category = categoriesRef.current.find(
+              (it) => it.name.toLowerCase() == categoryName.toLowerCase()
             );
+
             if (category) {
               editableProductRef.current.categoryId = category.id;
             } else {
@@ -191,6 +192,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
 
             const product = Object.assign({}, editableProductRef.current);
             onConfirm(product);
+            setEditableProduct(null)
           },
         }}
       >
@@ -240,11 +242,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             id="categoryName"
             disablePortal
             options={categories.map((category) => category.name)}
-            value={
-              categories.find(
-                (category) => category.products.indexOf(product?.id) != -1
-              )?.name || ""
-            }
+            defaultValue={categories.find((it) => it.products.includes(product?.id))?.name || ""}
             onChange={(event, value) => setCategoryName(value || "")}
             isOptionEqualToValue={(option, value) => option.name === value.name}
             renderInput={(params) => (
@@ -289,6 +287,30 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
             variant="outlined"
             inputProps={{ defaultValue: product?.address?.city || "" }}
             onChange={(event) => { editableProductRef.current.address.city = event.target.value; setEditableProduct({...editableProductRef.current}) }}
+          />
+          <TextField
+            required
+            fullWidth
+            margin="dense"
+            id="mapUrl"
+            name="mapUrl"
+            label="URL del mapa"
+            type="text"
+            variant="outlined"
+            inputProps={{ defaultValue: product?.mapUrl || "" }}
+            onChange={(event) => { editableProductRef.current.mapUrl = event.target.value; setEditableProduct({...editableProductRef.current}) }}
+          />
+          <TextField
+            required
+            fullWidth
+            margin="dense"
+            id="mapEmbed"
+            name="mapEmbed"
+            label="URL de previsualización de mapa (embed)"
+            type="text"
+            variant="outlined"
+            inputProps={{ defaultValue: product?.mapEmbed || "" }}
+            onChange={(event) => { editableProductRef.current.mapEmbed = event.target.value; setEditableProduct({...editableProductRef.current}) }}
           />
           <hr></hr>
 
@@ -407,6 +429,7 @@ export default function EditProduct({ open, onConfirm, onCancel, product }) {
               variant="outlined"
               helperText="URL de la imagen."
               inputProps={{ defaultValue: image }}
+              onChange={(event) => { editableProductRef.current.images[index] = event.target.value; setEditableProduct({...editableProductRef.current}) }}
             />
           ))}
         </DialogContent>

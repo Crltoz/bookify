@@ -247,7 +247,7 @@ const Admin = ({ user }) => {
         {showCategories && <AdminListCategories />}
         <EditProduct
           open={createProduct}
-          product={{}}
+          product={null}
           onConfirm={confirmCreateProduct}
           onCancel={() => setCreateProduct(false)}
         />

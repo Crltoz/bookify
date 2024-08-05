@@ -73,6 +73,11 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
     return available;
   };
 
+  const openMap = (url) => {
+    if (!url) return;
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="col-sm-auto mb-4" key={product.name}>
       <div className="card d-lg-flex flex-row d-none">
@@ -91,8 +96,8 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}
           </h5>
-          <p className="card-text">{product.description}</p>
-          <button href={product.link} className="btn btn-outline-success">
+          <p className="card-text">{product.description.slice(0, 325)}{product.description.length > 320 && ("...")} </p>
+          <button onClick={() => openMap(product.mapUrl)} className="btn btn-outline-success">
             <FontAwesomeIcon icon={faLocationPin} className="me-2" />
             {product.address.country + ", " + product.address.city}
           </button>
@@ -123,8 +128,8 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}
           </h5>
-          <p className="card-text">{product.description}</p>
-          <button href={product.link} className="btn btn-outline-success">
+          <p className="card-text">{product.description.slice(0, 325)}{product.description.length > 320 && ("...")}</p>
+          <button onClick={() => openMap(product.mapUrl)} className="btn btn-outline-success">
             <FontAwesomeIcon icon={faLocationPin} className="me-2" />
             {product.address.country + ", " + product.address.city}
           </button>

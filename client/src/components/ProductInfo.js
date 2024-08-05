@@ -11,6 +11,7 @@ import {
   faCirclePlus,
   faComment,
   faList,
+  faLocationPin,
   faLock,
   faPhotoFilm,
   faShare,
@@ -573,7 +574,7 @@ export default function ProductInfo() {
             </h5>
             {product?.policies &&
               product.policies.map((policy, index) => (
-                <div className="col-sm-3 mt-2 mb-2 ms-5 border" key={index}>
+                <div className="col-sm-3 mt-2 mb-2 border" key={index}>
                   <div className="d-flex align-items-center text-secondary">
                     <FontAwesomeIcon size="xs" icon={faCircle} />
                     <b style={{ marginLeft: "5px" }}>{policy.title}</b>
@@ -581,6 +582,14 @@ export default function ProductInfo() {
                   <div className="row ms-3">{policy.description}</div>
                 </div>
               ))}
+          </div>
+          <hr></hr>
+
+          <div className="row">
+            <h5>
+              <FontAwesomeIcon icon={faLocationPin} /> Mapa
+            </h5>
+            <iframe src={product.mapEmbed} width="600" height="450" style={{ border: "0px", marginTop: "15px" }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
           </div>
           <hr></hr>
         </div>
