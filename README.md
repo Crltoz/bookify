@@ -73,6 +73,8 @@ que estén desarrollando.
 
 Un poco de imágenes del proyecto.
 
+<img src="https://github.com/user-attachments/assets/59972abc-880d-4985-88b2-bf53e3cdd6a7" width="1200">
+
 <img src="https://github.com/user-attachments/assets/97ed6ea1-90ab-48ae-a08e-17e05a9699f5" width="400" />
 
 ![Captura de pantalla 2024-08-01 211242](https://github.com/user-attachments/assets/d85fc37b-610a-4cd3-824e-023cc22e3724)
