@@ -97,7 +97,6 @@ public class ProductController {
             String[] queries = query.split(",");
             if (queries.length == 2) {
                 List<Product> products = productService.getProductsByCountryAndCity(queries[0].trim(), queries[1].trim());
-                LOGGER.info("Products found: " + products.size());
                 if (!products.isEmpty()) {
                     return new ResponseEntity<>(transformProducts(products), HttpStatus.OK);
                 }
