@@ -319,7 +319,7 @@ export default function ProductInfo() {
               setOpenText("Inicia sesión o registrate para reservar.");
               break;
             case 200:
-              setOpenText("Reserva realizada correctamente.");
+              setOpenText("Reserva realizada correctamente. Toda la información ha sido enviada a su correo electrónico.");
               break;
             default:
               setOpenText("Error al realizar la reserva.");
