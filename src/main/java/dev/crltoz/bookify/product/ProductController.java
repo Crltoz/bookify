@@ -5,7 +5,12 @@ import dev.crltoz.bookify.category.CategoryService;
 import dev.crltoz.bookify.email.EmailService;
 import dev.crltoz.bookify.reservation.Reservation;
 import dev.crltoz.bookify.reservation.ReservationProjection;
+import dev.crltoz.bookify.reservation.ReservationRequest;
 import dev.crltoz.bookify.reservation.ReservationService;
+import dev.crltoz.bookify.review.Review;
+import dev.crltoz.bookify.review.ReviewProjection;
+import dev.crltoz.bookify.review.ReviewRequest;
+import dev.crltoz.bookify.review.ReviewService;
 import dev.crltoz.bookify.user.User;
 import dev.crltoz.bookify.user.UserService;
 import dev.crltoz.bookify.util.JwtUtil;
@@ -23,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -52,6 +58,9 @@ public class ProductController {
     @Autowired
     private ReservationService reservationService;
 
+    @Autowired
+    private ReviewService reviewService;
+
     @GetMapping
     public ResponseEntity<List<Product>> allProducts(@RequestHeader("Authorization") String token) {
         // check if is admin
@@ -62,18 +71,18 @@ public class ProductController {
     }
 
     @GetMapping("/home")
-    public ResponseEntity<List<Product>> homeProducts() {
+    public ResponseEntity<List<ProductRatingDTO>> homeProducts() {
         return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
     }
 
-    private List<Product> getRandomProducts() {
+    private List<ProductRatingDTO> getRandomProducts() {
         // all products
         List<Product> products = productService.getAllProducts();
         // shuffle products
         Collections.shuffle(products);
-        // return first 100 products
         int toIndex = Math.min(products.size(), 100);
-        return products.subList(0, toIndex);
+
+        return transformProducts(products.subList(0, toIndex));
     }
 
     @GetMapping("/addresses")
@@ -82,7 +91,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String query) {
+    public ResponseEntity<List<ProductRatingDTO>> searchProducts(@RequestParam String query) {
         query = cleanSearchString(query);
 
         // limit to 3 queries
@@ -111,7 +120,8 @@ public class ProductController {
                 if (products.isEmpty()) {
                     return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
                 }
-                return new ResponseEntity<>(products, HttpStatus.OK);
+
+                return new ResponseEntity<>(transformProducts(products), HttpStatus.OK);
             }
         }
 
@@ -126,7 +136,18 @@ public class ProductController {
             return new ResponseEntity<>(getRandomProducts(), HttpStatus.OK);
         }
 
-        return new ResponseEntity<>(products, HttpStatus.OK);
+
+        return new ResponseEntity<>(transformProducts(products), HttpStatus.OK);
+    }
+
+    private List<ProductRatingDTO> transformProducts(List<Product> products) {
+        return products.stream()
+                .map(product -> {
+                    List<ReviewProjection> reviews = reviewService.getReviewsByProductIdProjection(product.getId());
+                    double rating = reviews.stream().mapToDouble(ReviewProjection::getRating).average().orElse(0);
+                    return new ProductRatingDTO(product, rating, reviews.size());
+                })
+                .toList();
     }
 
     @GetMapping("/wishlist")
@@ -356,6 +377,45 @@ public class ProductController {
     @GetMapping("/reservations/{id}")
     public ResponseEntity<List<ReservationProjection>> getReservations(@PathVariable ObjectId id) {
         return new ResponseEntity<>(reservationService.getReservationsByProductIdProjection(id.toString()), HttpStatus.OK);
+    }
+
+    @GetMapping("/getReviewProductId/{id}")
+    public ResponseEntity<List<Review>> getReviewByProductId(@PathVariable ObjectId id) {
+        return new ResponseEntity<>(reviewService.getReviewsByProductId(id.toString()), HttpStatus.OK);
+    }
+
+    @GetMapping("/getReviewById/{id}")
+    public ResponseEntity<Review> getReviewById(@PathVariable ObjectId id) {
+        return new ResponseEntity<>(reviewService.getReviewById(id.toString()), HttpStatus.OK);
+    }
+
+    @PostMapping("/review")
+    public ResponseEntity<String> addReview(@RequestBody ReviewRequest reviewRequest, @RequestHeader("Authorization") String token) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        // return 404 if product not found
+        Product product = productService.getProductById(reviewRequest.getProductId()).orElse(null);
+        if (product == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+
+        // check if user already reviewed this product
+        List<Review> reviews = reviewService.getReviewsByUserId(user.getId());
+        for (Review review : reviews) {
+            if (review.getProductId().equals(product.getId())) {
+                return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            }
+        }
+
+        Review review = new Review(product.getId(), user.getId(), reviewRequest.getRating(), reviewRequest.getComment());
+        reviewService.save(review);
+
+        // send websocket message
+        webSocketService.sendMessage("createReview", List.of(product.getId(), user.getId(), review.getId()));
+        return new ResponseEntity<>("created", HttpStatus.OK);
     }
 
     private Long setStartOrEndTime(Long date, boolean isStart) {

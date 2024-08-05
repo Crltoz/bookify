@@ -238,6 +238,10 @@ function App() {
         publish("updateReservation", [args[0], args[1]]);
         break;
       }
+      case "createReview": {
+        publish("createReview", [args[0], args[1], args[2]]);
+        break;
+      }
       default:
         console.log("Unknown event type: ", event);
     }

@@ -5,6 +5,9 @@ import dev.crltoz.bookify.product.Product;
 import dev.crltoz.bookify.product.ProductService;
 import dev.crltoz.bookify.reservation.Reservation;
 import dev.crltoz.bookify.reservation.ReservationService;
+import dev.crltoz.bookify.review.Review;
+import dev.crltoz.bookify.review.ReviewProjection;
+import dev.crltoz.bookify.review.ReviewService;
 import dev.crltoz.bookify.util.JwtUtil;
 import dev.crltoz.bookify.util.UserUtil;
 import dev.crltoz.bookify.websocket.WebSocketService;
@@ -58,6 +61,9 @@ public class UserController {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Value("${env.URL}")
     private String URL;
@@ -399,6 +405,38 @@ public class UserController {
         }
 
         return new ResponseEntity<>(reservationService.getReservationsByUserId(user.getId()), HttpStatus.OK);
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<List<Review>> getReviews(@RequestHeader("Authorization") String token) {
+        User user = userUtil.getValidUser(token);
+        if (user == null) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(reviewService.getReviewsByUserId(user.getId()), HttpStatus.OK);
+    }
+
+    @GetMapping("/getName/{id}")
+    public ResponseEntity<String> getName(@PathVariable String id) {
+        Optional<User> user = userService.getUserById(new ObjectId(id));
+        if (user.isEmpty()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        if (!user.get().isConfirmed()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        // check if user has at least one review
+        // with this, we protect the user's privacy if they have not made any reviews
+        // and someone tries to get their name
+        List<ReviewProjection> reviews = reviewService.getReviewsByUserIdProjection(user.get().getId());
+        if (reviews.isEmpty()) {
+            return new ResponseEntity<>("null", HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(user.get().getFirstName() + " " + user.get().getLastName(), HttpStatus.OK);
     }
 
     private String getClientIp(HttpServletRequest request) {

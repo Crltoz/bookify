@@ -5,6 +5,9 @@ import { subscribe, unsubscribe } from "../events";
 import "./css/Reservations.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar, faStar } from "@fortawesome/free-solid-svg-icons";
+import ReviewDialog from "./ReviewDialog";
+import DialogText from "./DialogText";
+import { jwtDecode } from "jwt-decode";
 
 function getUserId() {
   const token = window.localStorage.getItem("token");
@@ -12,6 +15,7 @@ function getUserId() {
     const decodedObj = jwtDecode(token);
     return decodedObj.id;
   } catch (e) {
+    console.error(e);
     return null;
   }
 }
@@ -19,16 +23,38 @@ function getUserId() {
 const Reservations = () => {
   const [reservations, setReservations] = useState([]);
   const [products, setProducts] = useState([]);
+  const [ratingReservation, setRatingReservation] = useState(null);
+  const [dialogText, setDialogText] = useState("");
+  const [dialogTitle, setDialogTitle] = useState("");
+  const [myReviews, setMyReviews] = useState([]);
 
   useEffect(() => {
     updateReservations();
+    updateReviews();
 
     subscribe("updateReservation", updateReservationEvent);
+    subscribe("createReview", createReviewEvent);
 
     return () => {
       unsubscribe("updateReservation", updateReservationEvent);
+      unsubscribe("createReview", createReviewEvent);
     };
   }, []);
+
+  const createReviewEvent = async ({ detail }) => {
+    const userId = detail[1];
+    const reviewId = detail[2];
+    if (getUserId() != userId || !reviewId) return;
+    const newReview = await axios.get("/products/getReviewById/" + reviewId);
+    if (newReview.status !== 200) return;
+    setMyReviews((prev) => [...prev, newReview.data]);
+  };
+
+  const updateReviews = async () => {
+    const reviews = await axios.get("/users/reviews");
+    if (reviews.status !== 200) return;
+    setMyReviews(reviews.data);
+  };
 
   const updateReservationEvent = ({ detail }) => {
     const userId = detail[1];
@@ -78,14 +104,68 @@ const Reservations = () => {
     return products.find((product) => product.id === reservation.productId);
   };
 
+  const handleSendReview = async ({ rating, comment }) => {
+    const addReview = await axios.post("/products/review", {
+      productId: getProductForReservation(ratingReservation).id,
+      rating: rating,
+      comment: comment,
+    });
+
+    switch (addReview.status) {
+      case 200:
+        setDialogTitle("¡Éxito!");
+        setDialogText(
+          "Tu reseña ha sido enviada correctamente. ¡Gracias por tu opinión!"
+        );
+        break;
+      case 401:
+        setDialogTitle("Error");
+        setDialogText(
+          "Debes iniciar sesión para enviar una reseña. Por favor, inicia sesión e inténtalo de nuevo."
+        );
+        break;
+      case 404:
+        setDialogTitle("Error");
+        setDialogText(
+          "El producto que intentas calificar no existe. Por favor, inténtalo de nuevo."
+        );
+        break;
+      case 409:
+        setDialogTitle("Error");
+        setDialogText(
+          "Ya has enviado una reseña para este producto. No puedes enviar más de una reseña por producto."
+        );
+        break;
+      default:
+        setDialogTitle("Error");
+        setDialogText(
+          "Ha ocurrido un error al enviar la reseña. Inténtalo de nuevo más tarde."
+        );
+        break;
+    }
+
+    setRatingReservation(null);
+  };
+
   return (
     <div className="container d-flex justify-content-center min-vh-100 margin-logged">
       <div className="d-flex flex-column">
+        <DialogText
+          text={dialogText}
+          title={dialogTitle}
+          onConfirm={() => setDialogText("")}
+          onClose={() => setDialogText("")}
+        />
+        <ReviewDialog
+          open={ratingReservation != null}
+          onClose={() => setRatingReservation(null)}
+          onSubmit={handleSendReview}
+        />
         <div className="row">
           <h1>Reservas</h1>
         </div>
         <hr></hr>
-        {reservations.map((reservation, index) => (
+        {reservations.sort((a, b) => a.start - b.start).map((reservation, index) => (
           <div key={index} className="col-sm-12 mb-3">
             <div className="card d-lg-flex flex-row d-none">
               <img
@@ -100,58 +180,69 @@ const Reservations = () => {
                   height: "200px",
                   objectFit: "cover",
                 }}
-                onClick={() => onSelectItem(getProductForReservation(reservation))}
+                onClick={() =>
+                  onSelectItem(getProductForReservation(reservation))
+                }
               />
               <div className="card-body">
-                <h5 className="card-title" onClick={() => onSelectItem(getProductForReservation(reservation))}>
+                <h5
+                  className="card-title"
+                  onClick={() =>
+                    onSelectItem(getProductForReservation(reservation))
+                  }
+                >
                   {getProductForReservation(reservation)?.name || "Product"}
                 </h5>
-                <p className="card-text">
+                <p className="card-text" style={{ maxWidth: '70ch', wordWrap: 'break-word' }}>
                   {getProductForReservation(reservation)?.description}
                 </p>
               </div>
               <div className="card-footer" style={{ width: "50%" }}>
-                <p className="card-text reservation-info">
+                <div className="card-text reservation-info">
+                  <b>
+                    <FontAwesomeIcon
+                      className="text-success"
+                      icon={faCalendar}
+                    />{" "}
+                    Fecha de ingreso (Check-in):
+                  </b>
                   <p>
-                    <b>
-                      <FontAwesomeIcon
-                        className="text-success"
-                        icon={faCalendar}
-                      />{" "}
-                      Fecha de ingreso (Check-in):
-                    </b>
-                  </p>
-                  <span>
                     {new Date(reservation.start).toLocaleDateString("es-ES")}{" "}
                     {new Date(reservation.start).toLocaleTimeString("es-ES", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                  </span>
-                </p>
-
-                <p className="card-text reservation-info">
-                  <p>
-                    <b>
-                      <FontAwesomeIcon
-                        className="text-danger"
-                        icon={faCalendar}
-                      />{" "}
-                      Fecha de salida (Check-out):
-                    </b>
                   </p>
-                  <span>
+                </div>
+
+                <div className="card-text reservation-info mt-3">
+                  <b>
+                    <FontAwesomeIcon
+                      className="text-danger"
+                      icon={faCalendar}
+                    />{" "}
+                    Fecha de salida (Check-out):
+                  </b>
+                  <p>
                     {new Date(reservation.end).toLocaleDateString("es-ES")}{" "}
                     {new Date(reservation.end).toLocaleTimeString("es-ES", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                  </span>
-                </p>
+                  </p>
+                </div>
 
-                <button className="btn btn-success text-white">
-                  <FontAwesomeIcon icon={faStar} /> Calificar
-                </button>
+                {myReviews.findIndex(
+                  (it) =>
+                    it.productId === getProductForReservation(reservation)?.id
+                ) === -1 && (
+                  <button
+                    className="btn btn-success text-white mt-4"
+                    onClick={() => setRatingReservation(reservation)}
+                  >
+                    <FontAwesomeIcon icon={faStar} /> Calificar
+                  </button>
+                )}
               </div>
             </div>
 
@@ -163,9 +254,17 @@ const Reservations = () => {
                 }
                 alt={getProductForReservation(reservation)?.name || "Product"}
                 className="card-img-top user-select-none rounded image-effect"
+                onClick={() =>
+                  onSelectItem(getProductForReservation(reservation))
+                }
               />
               <div className="card-body">
-                <h5 className="card-title">
+                <h5
+                  className="card-title"
+                  onClick={() =>
+                    onSelectItem(getProductForReservation(reservation))
+                  }
+                >
                   {getProductForReservation(reservation)?.name || "Product"}
                 </h5>
                 <p className="card-text">
@@ -173,47 +272,53 @@ const Reservations = () => {
                 </p>
               </div>
               <div className="card-footer" style={{ width: "100%" }}>
-                <p className="card-text reservation-info">
-                  <p>
-                    <b>
-                      <FontAwesomeIcon
-                        className="text-success"
-                        icon={faCalendar}
-                      />{" "}
-                      Fecha de ingreso (Check-in):
-                    </b>
-                  </p>
-                  <span>
+                <div className="card-text reservation-info d-flex justify-content-center">
+                  <b>
+                    <FontAwesomeIcon
+                      className="text-success"
+                      icon={faCalendar}
+                    />{" "}
+                    Fecha de ingreso (Check-in):
+                  </b>
+                  <p className="ms-2">
                     {new Date(reservation.start).toLocaleDateString("es-ES")}{" "}
                     {new Date(reservation.start).toLocaleTimeString("es-ES", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                  </span>
-                </p>
-
-                <p className="card-text reservation-info">
-                  <p>
-                    <b>
-                      <FontAwesomeIcon
-                        className="text-danger"
-                        icon={faCalendar}
-                      />{" "}
-                      Fecha de salida (Check-out):
-                    </b>
                   </p>
-                  <span>
+                </div>
+
+                <div className="card-text reservation-info d-flex justify-content-center mt-2">
+                  <b>
+                    <FontAwesomeIcon
+                      className="text-danger"
+                      icon={faCalendar}
+                    />{" "}
+                    Fecha de salida (Check-out):
+                  </b>
+                  <p className="ms-2">
                     {new Date(reservation.end).toLocaleDateString("es-ES")}{" "}
                     {new Date(reservation.end).toLocaleTimeString("es-ES", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                  </span>
-                </p>
+                  </p>
+                </div>
 
-                <button className="btn btn-success text-white">
-                  <FontAwesomeIcon icon={faStar} /> Calificar
-                </button>
+                <div className="d-flex justify-content-center mt-3">
+                  {myReviews.findIndex(
+                    (it) =>
+                      it.productId === getProductForReservation(reservation)?.id
+                  ) === -1 && (
+                    <button
+                      className="btn btn-success text-white"
+                      onClick={() => setRatingReservation(reservation)}
+                    >
+                      <FontAwesomeIcon icon={faStar} /> Calificar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

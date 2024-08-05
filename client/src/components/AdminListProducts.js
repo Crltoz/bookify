@@ -112,7 +112,6 @@ const AdminListProducts = () => {
   const confirmEdit = async (editedProduct) => {
     try {
       setEditProduct(null);
-      console.log(editedProduct);
       const edited = await axios.post(`/products/edit`, editedProduct);
       switch (edited.status) {
         case 200: {

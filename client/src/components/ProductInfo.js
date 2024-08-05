@@ -1,6 +1,5 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -10,6 +9,7 @@ import {
   faCalendar,
   faCircle,
   faCirclePlus,
+  faComment,
   faList,
   faLock,
   faPhotoFilm,
@@ -29,6 +29,7 @@ import HomeLoader from "./HomeLoader";
 import DialogText from "./DialogText";
 import DatePicker from "./DatePicker";
 import { jwtDecode } from "jwt-decode";
+import ReviewSmall from "./ReviewSmall";
 
 function srcset(image) {
   return {
@@ -40,10 +41,6 @@ function srcset(image) {
 // the client here is in url http://url.com/product?id=123
 function getProductId() {
   return new URLSearchParams(window.location.search).get("id");
-}
-
-function isLogged() {
-  return localStorage.getItem("token") != null;
 }
 
 function getUserId() {
@@ -74,6 +71,9 @@ export default function ProductInfo() {
     endDate: to,
   });
   const [disabledDates, setDisabledDates] = React.useState([]);
+  const [reviews, setReviews] = React.useState([]);
+  const [reviewers, setReviewers] = React.useState({});
+  const reviewersRef = React.useRef(reviewers);
 
   const mainClass =
     getUserId() != null ? " margin-logged" : " margin-not-logged";
@@ -87,6 +87,9 @@ export default function ProductInfo() {
     const productId = getProductId();
 
     if (!productId) return;
+    // update reviews
+    updateReviews();
+
     // get the product by id
     axios.get(`/products/get/${productId}`).then((response) => {
       if (response.status != 200) {
@@ -103,23 +106,28 @@ export default function ProductInfo() {
       }, 1000);
     });
 
-    axios.get("/users/wishlist").then((response) => {
-      if (response.status != 200) return;
-      setWishlist(response.data);
-    });
+    if (getUserId()) {
+      updateWishlistEvent({ detail: getUserId() });
+    }
 
     subscribe("updateProduct", updateProductEvent);
     subscribe("deleteProduct", deleteProductEvent);
     subscribe("updateWishlist", updateWishlistEvent);
     subscribe("updateReservation", updateReservationEvent);
+    subscribe("createReview", createReviewEvent);
 
     return () => {
       unsubscribe("updateProduct");
       unsubscribe("deleteProduct");
       unsubscribe("updateWishlist");
       unsubscribe("updateReservation");
+      unsubscribe("updateReviews");
     };
   }, []);
+
+  React.useEffect(() => {
+    reviewersRef.current = reviewers;
+  }, [reviewers]);
 
   const updateWishlistEvent = ({ detail }) => {
     if (!getUserId() || getUserId() != detail) return;
@@ -137,6 +145,43 @@ export default function ProductInfo() {
     }
   };
 
+  const createReviewEvent = ({ detail }) => {
+    const productId = detail[0];
+    const reviewId = detail[2];
+    if (getProductId() !== productId) return;
+    if (!reviewId) return;
+    axios.get(`/products/getReviewById/${reviewId}`).then((response) => {
+      if (response.status != 200) return;
+      setReviews((prev) => [...prev, response.data]);
+      updateReviewersNames([response.data]);
+    });
+  };
+
+  const updateReviews = () => {
+    if (!getProductId()) return;
+    axios
+      .get(`/products/getReviewProductId/${getProductId()}`)
+      .then((response) => {
+        if (response.status != 200) return;
+        setReviews(response.data);
+
+        // add reviewers names
+        updateReviewersNames(response.data);
+      });
+  };
+
+  const updateReviewersNames = (reviews) => {
+    for (let review of reviews) {
+      if (reviewersRef.current[review.userId] == null) {
+        axios.get(`/users/getName/${review.userId}`).then((response) => {
+          if (response.status != 200) return;
+          reviewersRef.current[review.userId] = response.data;
+          setReviewers({ ...reviewersRef.current });
+        });
+      }
+    }
+  };
+
   React.useEffect(() => {
     setImages(product?.images || []);
   }, [product]);
@@ -147,7 +192,7 @@ export default function ProductInfo() {
   };
 
   const toggleProductWishlist = () => {
-    if (!isLogged()) {
+    if (!getUserId()) {
       setOpenText(
         "Inicia sesión o registrate para añadir productos a tus favoritos."
       );
@@ -209,7 +254,7 @@ export default function ProductInfo() {
   };
 
   const showReservation = () => {
-    if (!isLogged()) {
+    if (!getUserId()) {
       setOpenText("Inicia sesión o registrate para reservar.");
       return;
     }
@@ -234,7 +279,7 @@ export default function ProductInfo() {
   };
 
   const handleConfirmDialog = () => {
-    if (dateSelected.startDate && dateSelected.endDate) {
+    if (dateSelected.startDate && dateSelected.endDate && getUserId()) {
       const productId = getProductId();
       axios
         .post(`/products/reserve`, {
@@ -270,6 +315,15 @@ export default function ProductInfo() {
       return;
     }
     setOpenText("");
+  };
+
+  const calculateRating = () => {
+    if (reviews.length == 0) return 0;
+    let sum = 0;
+    for (let review of reviews) {
+      sum += review.rating;
+    }
+    return sum / reviews.length;
   };
 
   return !loading ? (
@@ -403,6 +457,51 @@ export default function ProductInfo() {
                   </div>
                 </div>
               ))}
+          </div>
+          <hr></hr>
+
+          <div className="row">
+            <h5>
+              <FontAwesomeIcon icon={faComment} /> Opiniones
+            </h5>
+
+            <div className="col mt-2 mb-2 w-100" key={index}>
+              <div className="d-flex justify-content-left">
+                <div className="text-secondary border">
+                  <ReviewSmall
+                    reviews={reviews.length}
+                    stars={calculateRating()}
+                  />
+                </div>
+              </div>
+
+              <hr></hr>
+
+              <div>
+                <h6>Reseñas de usuarios</h6>
+              </div>
+              {reviews.map((review, index) => (
+                <div className="card" key={index}>
+                  <div className="ps-3 pt-3">
+                    <div className="d-flex align-items-center">
+                      <div className="user-initial-circle">
+                        {reviewers[review.userId]?.charAt(0)?.toUpperCase() ||
+                          "S"}
+                      </div>
+                      <span className="ps-2">
+                        <b>{reviewers[review.userId] || "Sin nombre"}</b>
+                      </span>
+                      <div>
+                        <ReviewSmall stars={review.rating} />
+                      </div>
+                    </div>
+                    <div className="ps-5 pt-1 pb-3">
+                      <span>{review.comment}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <hr></hr>
 

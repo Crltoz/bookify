@@ -32,7 +32,6 @@ const Home = ({ products }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const mainClass = isLogged() ? "margin-logged" : "margin-not-logged";
-  console.log(mainClass)
 
   const defaultFilterOptions = createFilterOptions();
 

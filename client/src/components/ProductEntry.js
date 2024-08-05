@@ -7,18 +7,38 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { subscribe, unsubscribe } from "../events";
+import ReviewSmall from "./ReviewSmall";
 
 const ProductEntry = ({ product, onSelectItem, from, to }) => {
   const [reservations, setReservations] = useState([]);
+  const [rating, setRating] = useState({ rating: 0, ratingCount: 0 });
 
   useEffect(() => {
     updateReservations();
     subscribe("updateReservation", updateReservationEvent);
+    subscribe("createReview", createReviewEvent);
+    setRating({ rating: product.rating, ratingCount: product.ratingCount });
 
     return () => {
       unsubscribe("updateReservation", updateReservationEvent);
+      unsubscribe("createReview", createReviewEvent);
     };
   }, []);
+
+  const createReviewEvent = async ({ detail }) => {
+    const productId = detail[0];
+    if (productId != product.id) return;
+    const reviewId = detail[2];
+    if (!reviewId) return;
+    const response = await axios.get("/products/getReviewById/" + reviewId);
+    if (response.status === 200) {
+      const review = response.data;
+      const newRating = (product.rating * product.ratingCount + review.rating) / (product.ratingCount + 1);
+      setRating({ rating: newRating, ratingCount: product.ratingCount + 1 });
+      product.rating = newRating;
+      product.ratingCount += 1;
+    }
+  };
 
   const updateReservationEvent = ({ detail }) => {
     const productId = detail[0];
@@ -54,12 +74,17 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
   return (
     <div className="col-sm-auto mb-4" key={product.name}>
       <div className="card d-lg-flex flex-row d-none">
-        <img
-          src={product.images[0] || "https://via.placeholder.com/300"}
-          className="card-img-left user-select-none rounded image-effect"
-          alt={product.name}
-          onClick={() => onSelectItem(product)}
-        />
+        <div>
+          <img
+            src={product.images[0] || "https://via.placeholder.com/300"}
+            className="card-img-left user-select-none rounded image-effect"
+            alt={product.name}
+            onClick={() => onSelectItem(product)}
+          />
+          <div className="justify-content-center pb-2 pt-2">
+          <ReviewSmall stars={rating.rating} reviews={rating.ratingCount} />
+          </div>
+        </div>
         <div className="card-body d-flex flex-column justify-content-between align-items-center">
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}

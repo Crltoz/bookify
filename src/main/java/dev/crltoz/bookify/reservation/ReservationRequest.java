@@ -1,4 +1,4 @@
-package dev.crltoz.bookify.product;
+package dev.crltoz.bookify.reservation;
 
 import lombok.Getter;
 import org.bson.types.ObjectId;
