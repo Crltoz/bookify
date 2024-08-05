@@ -53,6 +53,16 @@ function getUserId() {
   }
 }
 
+function getUserName() {
+  const token = window.localStorage.getItem("token");
+  try {
+    const decodedObj = jwtDecode(token);
+    return decodedObj.name + " " + decodedObj.lastName;
+  } catch (e) {
+    return null;
+  }
+}
+
 const from = new URLSearchParams(window.location.search).get("from");
 const to = new URLSearchParams(window.location.search).get("to");
 
@@ -65,6 +75,7 @@ export default function ProductInfo() {
   const [openShare, setOpenShare] = React.useState(false);
   const [wishlist, setWishlist] = React.useState([]);
   const [openText, setOpenText] = React.useState("");
+  const [dialogButton, setDialogButton] = React.useState("Aceptar");
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [dateSelected, setDateSelected] = React.useState({
     startDate: from,
@@ -200,6 +211,7 @@ export default function ProductInfo() {
   const toggleProductWishlist = () => {
     if (!getUserId()) {
       setRedirectLogin(true);
+      setDialogButton("Iniciar sesión");
       setOpenText(
         "Inicia sesión o registrate para añadir productos a tus favoritos."
       );
@@ -263,6 +275,7 @@ export default function ProductInfo() {
   const showReservation = () => {
     if (!getUserId()) {
       setRedirectLogin(true);
+      setDialogButton("Iniciar sesión");
       setOpenText("Inicia sesión o registrate para reservar.");
       return;
     }
@@ -275,12 +288,15 @@ export default function ProductInfo() {
       const startDate = date[0].startDate.getTime();
       const endDate = date[0].endDate.getTime();
       setDateSelected({ startDate: startDate, endDate: endDate });
+      setDialogButton("Reservar");
       setOpenText(
         `¿Estás seguro que quieres reservar en las fechas seleccionadas? Son ${
           (endDate - startDate) / 1000 / 60 / 60 / 24
         } noches. Check-in: ${new Date(startDate).toLocaleDateString(
           "es-ES"
-        )} Check-out: ${new Date(endDate).toLocaleDateString("es-ES")}`
+        )} Check-out: ${new Date(endDate).toLocaleDateString("es-ES")} | 
+        La reserva estará a tu nombre: ${getUserName()} | 
+        Los datos de la reserva serán enviados a tu correo electrónico.`
       );
     }
     setShowDatePicker(false);
@@ -302,6 +318,7 @@ export default function ProductInfo() {
           productId: productId,
         })
         .then((response) => {
+          setDialogButton("Aceptar");
           switch (response.status) {
             case 400:
               setOpenText("La fecha seleccionada no está disponible.");
@@ -316,6 +333,7 @@ export default function ProductInfo() {
               break;
             case 401:
               setRedirectLogin(true);
+              setDialogButton("Iniciar sesión");
               setOpenText("Inicia sesión o registrate para reservar.");
               break;
             case 200:
@@ -330,10 +348,12 @@ export default function ProductInfo() {
       return;
     }
     setOpenText("");
+    setDialogButton("Aceptar");
   };
 
   const handleCloseDialog = () => {
     setOpenText("");
+    setDialogButton("Aceptar");
     if (redirectLoginRef.current) {
       window.location.href = "/login";
       return;
@@ -357,6 +377,7 @@ export default function ProductInfo() {
           text={openText}
           onClose={handleCloseDialog}
           onConfirm={handleConfirmDialog}
+          buttonName={dialogButton}
         />
         <Share
           open={openShare}
