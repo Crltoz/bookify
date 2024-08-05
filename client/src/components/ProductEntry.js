@@ -33,7 +33,9 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
     const response = await axios.get("/products/getReviewById/" + reviewId);
     if (response.status === 200) {
       const review = response.data;
-      const newRating = (product.rating * product.ratingCount + review.rating) / (product.ratingCount + 1);
+      const newRating =
+        (product.rating * product.ratingCount + review.rating) /
+        (product.ratingCount + 1);
       setRating({ rating: newRating, ratingCount: product.ratingCount + 1 });
       product.rating = newRating;
       product.ratingCount += 1;
@@ -82,7 +84,7 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
             onClick={() => onSelectItem(product)}
           />
           <div className="justify-content-center pb-2 pt-2">
-          <ReviewSmall stars={rating.rating} reviews={rating.ratingCount} />
+            <ReviewSmall stars={rating.rating} reviews={rating.ratingCount} />
           </div>
         </div>
         <div className="card-body d-flex flex-column justify-content-between align-items-center">
@@ -114,6 +116,9 @@ const ProductEntry = ({ product, onSelectItem, from, to }) => {
           alt={product.name}
           onClick={() => onSelectItem(product)}
         />
+        <div className="mt-2">
+          <ReviewSmall stars={rating.rating} reviews={rating.ratingCount} />
+        </div>
         <div className="card-body">
           <h5 className="card-title" onClick={() => onSelectItem(product)}>
             {product.name}
