@@ -34,6 +34,9 @@ La idea es desarrollar un "Online Booking", donde se pueden reservar habitacione
 Es de código abierto, así que cualquiera puede realizar forks y modificarlo a su gusto. También puede servir para una base de otra aplicación
 que estén desarrollando.
 
+Al haber clonado y realizado todos los pasos, el proyecto se corre ejecutando el jar del application, y el frontend en modo dev con `npm start` estando dentro
+de la carpeta de `client`
+
 <a href="https://bookify.website">Demo</a>
 
 
