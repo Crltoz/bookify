@@ -21,7 +21,7 @@ const Share = ({ open, onClose, productId }) => {
   const shareUrl = `${baseURL}/productCard?id=${productId}`;
 
   const handleShareTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+    const url = `https://x.com/intent/post?url=${encodeURIComponent(
       shareUrl
     )}&text=${encodeURIComponent(shareText)}`;
     window.open(url, "_blank");
