@@ -18,8 +18,9 @@ const shareText = "¡Mira este producto de Bookify! ";
 const baseURL = window.location.origin;
 
 const Share = ({ open, onClose, productId }) => {
+  const shareUrl = `${baseURL}/productCard?id=${productId}`;
+
   const handleShareTwitter = () => {
-    const shareUrl = `${baseURL}/productCard?id=${productId}`;
     const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
       shareUrl
     )}&text=${encodeURIComponent(shareText)}`;
@@ -27,7 +28,6 @@ const Share = ({ open, onClose, productId }) => {
   };
 
   const handleShareEmail = () => {
-    const shareUrl = `${baseURL}/productCard?id=${productId}`;
     const subject = "Mira este producto en Bookify";
     const body = `Ey,\n\nEstuve revisando hoteles y lugares para reservar en Bookify. Mira este: ${shareUrl}\n\n¡Nos vemos!`;
     const url = `mailto:?subject=${encodeURIComponent(
