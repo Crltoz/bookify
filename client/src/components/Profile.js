@@ -168,8 +168,8 @@ const Profile = ({ user, onUpdate }) => {
 
     setInvalidName("");
     setInvalidLastName("");
-    setEditableName(name);
-    setEditableLastName(lastName);
+    setEditableName(user.name);
+    setEditableLastName(user.lastName);
     setEditNames(!editNames);
   };
 
