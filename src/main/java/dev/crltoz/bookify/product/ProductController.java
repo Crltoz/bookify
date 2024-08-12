@@ -162,7 +162,7 @@ public class ProductController {
     }
 
     @GetMapping("/wishlist")
-    public ResponseEntity<List<Product>> getWishlist(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ProductRatingDTO>> getWishlist(@RequestHeader("Authorization") String token) {
         User user = userUtil.getValidUser(token);
         if (user == null) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.UNAUTHORIZED);
@@ -179,7 +179,7 @@ public class ProductController {
             product.ifPresent(products::add);
         }
 
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        return new ResponseEntity<>(transformProducts(products), HttpStatus.OK);
     }
 
     public static String cleanSearchString(String search) {
