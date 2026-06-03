@@ -37,9 +37,6 @@ que estén desarrollando.
 Al haber clonado y realizado todos los pasos, el proyecto se corre ejecutando el jar del application, y el frontend en modo dev con `npm start` estando dentro
 de la carpeta de `client`
 
-<a href="https://bookify.website">Demo</a>
-
-
 **🛠️ Features:**
 
 - Registro y autenticación de usuarios.
